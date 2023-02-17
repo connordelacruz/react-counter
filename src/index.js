@@ -3,33 +3,20 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 
 
+// TODO: convert to functional component
 class Counter extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      val: 0,
-    }
-  }
-
-  handleClick(amountToAdd) {
-    const currentVal = this.state.val
-    this.setState({
-      val: currentVal + amountToAdd,
-    })
-  }
-
   render() {
     return (
       <div className='counter'>
         <button
-          className='counter-button'
-          onClick={() => this.handleClick(-1)}>
+          className='counter-button decrement'
+          onClick={this.props.decrementOnClick}>
           -
         </button>
-        <span className='counter-value'>{this.state.val}</span>
+        <span className='counter-value'>{this.props.value}</span>
         <button
-          className='counter-button'
-          onClick={() => this.handleClick(1)}>
+          className='counter-button increment'
+          onClick={this.props.incrementOnClick}>
           +
         </button>
       </div>
@@ -37,7 +24,55 @@ class Counter extends React.Component {
   }
 }
 
+
+class CounterList extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      counters: [
+        {value: 0},
+      ],
+    }
+  }
+
+  handleCounterButtonClick(i, amountToAdd) {
+    const counters = [...this.state.counters]
+    const currentValue = counters[i].value
+    counters[i].value = currentValue + amountToAdd
+    this.setState({
+      counters: counters,
+    })
+  }
+
+  renderCounter(i) {
+    return (
+      <Counter
+        value={this.state.counters[i].value}
+        incrementOnClick={() => this.handleCounterButtonClick(i, 1)}
+        decrementOnClick={() => this.handleCounterButtonClick(i, -1)}
+      />
+    )
+  }
+
+  render() {
+    const counters = this.state.counters
+    const counterList = counters.map((counter, i) => {
+      return (
+        <li key={i}>
+          {this.renderCounter(i)}
+        </li>
+      )
+    })
+
+    return (
+      <div className='counter-list-container'>
+        <ul className='counter-list'>{counterList}</ul>
+      </div>
+    )
+  }
+}
+
 // =============================================================================
 const root = ReactDOM.createRoot(document.getElementById('root'))
-root.render(<Counter/>)
+root.render(<CounterList />)
 
