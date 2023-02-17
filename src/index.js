@@ -54,8 +54,19 @@ class CounterList extends React.Component {
     )
   }
 
+  handleNewCounterButtonClick() {
+    const newCounter = {
+      value: 0,
+    }
+    const counters = [...this.state.counters]
+    this.setState({
+      counters: counters.concat([newCounter]),
+    })
+  }
+
   render() {
     const counters = this.state.counters
+    // TODO: add remove counter button
     const counterList = counters.map((counter, i) => {
       return (
         <li key={i}>
@@ -66,7 +77,14 @@ class CounterList extends React.Component {
 
     return (
       <div className='counter-list-container'>
+        <h2 className='counter-list-header'>Counters</h2>
         <ul className='counter-list'>{counterList}</ul>
+        <button
+          className='counter-list-new-counter-button'
+          onClick={() => this.handleNewCounterButtonClick()}
+        >
+          Create New Counter
+        </button>
       </div>
     )
   }
