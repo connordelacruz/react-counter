@@ -1,41 +1,44 @@
 import { useState } from 'react'
-import {Box, Button, ButtonGroup, Container, Divider, Paper, Stack, Typography} from "@mui/material";
+import {Box, Button, Container, Divider, Stack, Typography} from "@mui/material";
+import {AddCircleOutline, RemoveCircleOutline} from "@mui/icons-material";
 
 
 function Counter({ value, decrementOnClick, incrementOnClick }) {
   return (
-    <Paper
-      sx={{ width: 1 }}
-    >
+    <Box>
       <Stack
         alignItems="center"
         direction="row"
-        divider={<Divider orientation="vertical" flexItem />}
         spacing={2}
       >
         <Button
-          variant="contained"
+          variant="outlined"
           fullWidth
-          onClick={decrementOnClick}>
-          -
+          onClick={decrementOnClick}
+        >
+          <RemoveCircleOutline/>
         </Button>
         <Box
           sx={{
             width: 1,
-            textAlign: 'center',
           }}
         >
-          {value}
+          <Typography
+            variant="h4"
+            sx={{ textAlign: 'center' }}
+          >
+            {value}
+          </Typography>
         </Box>
         <Button
-          variant="contained"
+          variant="outlined"
           fullWidth
           onClick={incrementOnClick}
         >
-          +
+          <AddCircleOutline/>
         </Button>
       </Stack>
-    </Paper>
+    </Box>
   )
 }
 
@@ -76,8 +79,15 @@ function CounterList() {
   })
   return (
     <Box>
-      <Stack>{counterList}</Stack>
-      <Box sx={{ my: 4 }}>
+      <Stack
+        divider={<Divider orientation="horizontal" flexItem />}
+        spacing={2}
+      >
+        {counterList}
+      </Stack>
+      <Box
+        sx={{ my: 4 }}
+      >
         <Button
           variant="contained"
           fullWidth
@@ -94,11 +104,19 @@ function CounterList() {
 export default function AppContainer() {
     return (
       <Container maxWidth="sm">
-        <Box sx={{
-          my: 4,
-          width: 1,
-        }}>
-          <Typography variant="h4" component="h1" gutterBottom>Counters</Typography>
+        <Box
+          sx={{
+            my: 4,
+            width: 1,
+          }}
+        >
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+          >
+            Counters
+          </Typography>
           <CounterList />
         </Box>
       </Container>
