@@ -6,48 +6,37 @@ import {AddCircleOutline, RemoveCircleOutline} from "@mui/icons-material";
 function Counter({ value, name, onNameChange, decrementOnClick, incrementOnClick }) {
   return (
     <Box>
+      <Box>
+        <TextField
+          variant="outlined" size="small" fullWidth
+          value={name}
+          onChange={(event) => {
+            onNameChange(event.target.value)
+          }}
+        />
+      </Box>
       <Stack
         alignItems="center"
         direction="row"
         spacing={2}
       >
         <Button
-          variant="outlined"
-          size="large"
-          fullWidth
+          variant="outlined" size="large" fullWidth
           onClick={decrementOnClick}
         >
           <RemoveCircleOutline/>
         </Button>
         <Box
-          sx={{
-            width: 1,
-          }}
+          my={2} sx={{width: 1}}
         >
-          <TextField
-            variant="standard"
-            size="small"
-            fullWidth
-            value={name}
-            onChange={(event) => {
-              onNameChange(event.target.value)
-            }}
-          />
-          <Box
-            my={1}
+          <Typography
+            variant="h3" sx={{textAlign: 'center'}}
           >
-            <Typography
-              variant="h3"
-              sx={{textAlign: 'center'}}
-            >
-              {value}
-            </Typography>
-          </Box>
+            {value}
+          </Typography>
         </Box>
         <Button
-          variant="outlined"
-          size="large"
-          fullWidth
+          variant="outlined" size="large" fullWidth
           onClick={incrementOnClick}
         >
           <AddCircleOutline/>
