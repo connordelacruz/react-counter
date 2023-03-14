@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import {Box, Button, Container, Divider, Stack, Typography} from "@mui/material";
+import {Box, Button, Container, Divider, Stack, TextField, Typography} from "@mui/material";
 import {AddCircleOutline, RemoveCircleOutline} from "@mui/icons-material";
 
 
-function Counter({ value, name, decrementOnClick, incrementOnClick }) {
+function Counter({ value, name, onNameChange, decrementOnClick, incrementOnClick }) {
   return (
     <Box>
       <Stack
@@ -13,6 +13,7 @@ function Counter({ value, name, decrementOnClick, incrementOnClick }) {
       >
         <Button
           variant="outlined"
+          size="large"
           fullWidth
           onClick={decrementOnClick}
         >
@@ -23,21 +24,29 @@ function Counter({ value, name, decrementOnClick, incrementOnClick }) {
             width: 1,
           }}
         >
-          <Typography
-            variant="h6"
-            sx={{ textAlign: 'center' }}
+          <TextField
+            variant="standard"
+            size="small"
+            fullWidth
+            value={name}
+            onChange={(event) => {
+              onNameChange(event.target.value)
+            }}
+          />
+          <Box
+            my={1}
           >
-            {name}
-          </Typography>
-          <Typography
-            variant="h4"
-            sx={{ textAlign: 'center' }}
-          >
-            {value}
-          </Typography>
+            <Typography
+              variant="h3"
+              sx={{textAlign: 'center'}}
+            >
+              {value}
+            </Typography>
+          </Box>
         </Box>
         <Button
           variant="outlined"
+          size="large"
           fullWidth
           onClick={incrementOnClick}
         >
@@ -67,11 +76,20 @@ function CounterList() {
     setCounters(newCounters)
   }
 
+  function handleNameChange(i) {
+    return (newName) => {
+      const newCounters = [...counters]
+      newCounters[i].name = newName
+      setCounters(newCounters)
+    }
+  }
+
   function renderCounter(i) {
     return (
       <Counter
         value={counters[i].value}
         name={counters[i].name}
+        onNameChange={handleNameChange(i)}
         incrementOnClick={() => handleCounterButtonClick(i, counters[i].incrementBy)}
         decrementOnClick={() => handleCounterButtonClick(i, -1 * counters[i].decrementBy)}
       />
