@@ -1,21 +1,41 @@
 import { useState } from 'react'
+import {Box, Button, ButtonGroup, Container, Divider, Paper, Stack, Typography} from "@mui/material";
 
 
 function Counter({ value, decrementOnClick, incrementOnClick }) {
   return (
-    <div className='counter'>
-      <button
-        className='counter-button decrement'
-        onClick={decrementOnClick}>
-        -
-      </button>
-      <span className='counter-value'>{value}</span>
-      <button
-        className='counter-button increment'
-        onClick={incrementOnClick}>
-        +
-      </button>
-    </div>
+    <Paper
+      sx={{ width: 1 }}
+    >
+      <Stack
+        alignItems="center"
+        direction="row"
+        divider={<Divider orientation="vertical" flexItem />}
+        spacing={2}
+      >
+        <Button
+          variant="contained"
+          fullWidth
+          onClick={decrementOnClick}>
+          -
+        </Button>
+        <Box
+          sx={{
+            width: 1,
+            textAlign: 'center',
+          }}
+        >
+          {value}
+        </Box>
+        <Button
+          variant="contained"
+          fullWidth
+          onClick={incrementOnClick}
+        >
+          +
+        </Button>
+      </Stack>
+    </Paper>
   )
 }
 
@@ -49,30 +69,38 @@ function CounterList() {
 
   const counterList = counters.map((counter, i) => {
     return (
-      <li key={i}>
+      <Box key={i}>
         {renderCounter(i)}
-      </li>
+      </Box>
     )
   })
   return (
-    <div className='counter-list-container'>
-      <ul className='counter-list'>{counterList}</ul>
-      <button
-        className='counter-list-new-counter-button'
-        onClick={() => handleNewCounterButtonClick()}
-      >
-        Create New Counter
-      </button>
-    </div>
+    <Box>
+      <Stack>{counterList}</Stack>
+      <Box sx={{ my: 4 }}>
+        <Button
+          variant="contained"
+          fullWidth
+          onClick={() => handleNewCounterButtonClick()}
+        >
+          Create New Counter
+        </Button>
+      </Box>
+    </Box>
   )
 }
 
 
 export default function AppContainer() {
     return (
-      <div className="app-container">
-        <h2>Counters</h2>
-        <CounterList />
-      </div>
+      <Container maxWidth="sm">
+        <Box sx={{
+          my: 4,
+          width: 1,
+        }}>
+          <Typography variant="h4" component="h1" gutterBottom>Counters</Typography>
+          <CounterList />
+        </Box>
+      </Container>
     )
 }
