@@ -3,7 +3,7 @@ import {Box, Button, Container, Divider, Stack, Typography} from "@mui/material"
 import {AddCircleOutline, RemoveCircleOutline} from "@mui/icons-material";
 
 
-function Counter({ value, decrementOnClick, incrementOnClick }) {
+function Counter({ value, name, decrementOnClick, incrementOnClick }) {
   return (
     <Box>
       <Stack
@@ -23,6 +23,12 @@ function Counter({ value, decrementOnClick, incrementOnClick }) {
             width: 1,
           }}
         >
+          <Typography
+            variant="h6"
+            sx={{ textAlign: 'center' }}
+          >
+            {name}
+          </Typography>
           <Typography
             variant="h4"
             sx={{ textAlign: 'center' }}
@@ -44,7 +50,16 @@ function Counter({ value, decrementOnClick, incrementOnClick }) {
 
 
 function CounterList() {
-  const [counters, setCounters] = useState([{ value: 0}])
+  const [counters, setCounters] = useState(
+    [
+      {
+        value: 0,
+        incrementBy: 1,
+        decrementBy: 1,
+        name: 'Counter 0',
+      }
+    ]
+  )
 
   function handleCounterButtonClick(i, amountToAdd) {
     const newCounters = [...counters]
@@ -56,15 +71,20 @@ function CounterList() {
     return (
       <Counter
         value={counters[i].value}
-        incrementOnClick={() => handleCounterButtonClick(i, 1)}
-        decrementOnClick={() => handleCounterButtonClick(i, -1)}
+        name={counters[i].name}
+        incrementOnClick={() => handleCounterButtonClick(i, counters[i].incrementBy)}
+        decrementOnClick={() => handleCounterButtonClick(i, -1 * counters[i].decrementBy)}
       />
     )
   }
 
   function handleNewCounterButtonClick() {
+    const counterNumber = counters.length
     const newCounter = {
       value: 0,
+      incrementBy: 1,
+      decrementBy: 1,
+      name: `Counter ${counterNumber}`,
     }
     const newCounters = [...counters, newCounter]
     setCounters(newCounters)
