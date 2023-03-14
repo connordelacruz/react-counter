@@ -1,20 +1,36 @@
 import { useState } from 'react'
-import {Box, Button, Container, Divider, Stack, TextField, Typography} from "@mui/material";
-import {AddCircleOutline, RemoveCircleOutline} from "@mui/icons-material";
+import {Box, Button, ButtonGroup, Container, Divider, IconButton, Stack, TextField, Typography} from "@mui/material";
+import {AddCircleOutline, Clear, Edit, RemoveCircleOutline} from "@mui/icons-material";
+import Grid from "@mui/material/Unstable_Grid2";
 
 
-function Counter({ value, name, onNameChange, decrementOnClick, incrementOnClick }) {
+function Counter({ value, name,
+                   nameOnChange, decrementOnClick, incrementOnClick,
+                   deleteOnClick
+                 }) {
   return (
     <Box>
-      <Box>
-        <TextField
-          variant="outlined" size="small" fullWidth
-          value={name}
-          onChange={(event) => {
-            onNameChange(event.target.value)
-          }}
-        />
-      </Box>
+      <Grid container>
+        <Grid xs={10}>
+          <TextField
+            variant="standard" size="small" fullWidth
+            value={name}
+            onChange={(event) => {
+              nameOnChange(event.target.value)
+            }}
+          />
+        </Grid>
+        <Grid xs={2} sx={{textAlign: 'right'}}>
+          <ButtonGroup>
+            <IconButton>
+              <Edit/>
+            </IconButton>
+            <IconButton onClick={deleteOnClick}>
+              <Clear/>
+            </IconButton>
+          </ButtonGroup>
+        </Grid>
+      </Grid>
       <Stack
         alignItems="center"
         direction="row"
@@ -65,10 +81,19 @@ function CounterList() {
     setCounters(newCounters)
   }
 
-  function handleNameChange(i) {
+  function handleNameTextInputChange(i) {
     return (newName) => {
       const newCounters = [...counters]
       newCounters[i].name = newName
+      setCounters(newCounters)
+    }
+  }
+
+  // TODO: confirmation dialog
+  function handleDeleteButtonClick(i) {
+    return () => {
+      const newCounters = [...counters]
+      newCounters.splice(i, 1)
       setCounters(newCounters)
     }
   }
@@ -78,9 +103,10 @@ function CounterList() {
       <Counter
         value={counters[i].value}
         name={counters[i].name}
-        onNameChange={handleNameChange(i)}
+        nameOnChange={handleNameTextInputChange(i)}
         incrementOnClick={() => handleCounterButtonClick(i, counters[i].incrementBy)}
         decrementOnClick={() => handleCounterButtonClick(i, -1 * counters[i].decrementBy)}
+        deleteOnClick={handleDeleteButtonClick(i)}
       />
     )
   }
