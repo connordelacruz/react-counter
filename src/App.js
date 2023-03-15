@@ -76,21 +76,18 @@ function Counter({ value, name,
 
 
 // Delete confirmation dialog
-// TODO: make code consistent, add prop for target name
-function DeleteCounterDialog({ open, confirmOnClick, closeOnClick }) {
+function DeleteCounterDialog({ open, targetName, confirmOnClick, closeOnClick }) {
   return (
     <Dialog
       open={open}
       onClose={closeOnClick}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
     >
-      <DialogTitle id="alert-dialog-title">
-        Delete Counter
+      <DialogTitle>
+        Delete Counter?
       </DialogTitle>
       <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-          Are you sure you want to delete this counter?
+        <DialogContentText>
+          Are you sure you want to delete <b>{targetName}</b>?
         </DialogContentText>
       </DialogContent>
       <DialogActions>
@@ -180,9 +177,23 @@ function CounterList() {
   }
 
   // ================================================================================
-  // TODO: organize code sections from here
+  // CREATE / RENDER COUNTER FUNCTIONS
   // ================================================================================
 
+  // New counter button click
+  function handleNewCounterButtonClick() {
+    const counterNumber = counters.length
+    const newCounter = {
+      value: 0,
+      incrementBy: 1,
+      decrementBy: 1,
+      name: `Counter ${counterNumber}`,
+    }
+    const newCounters = [...counters, newCounter]
+    setCounters(newCounters)
+  }
+
+  // Render Counter component
   function renderCounter(i) {
     return (
       <Counter
@@ -196,18 +207,7 @@ function CounterList() {
     )
   }
 
-  function handleNewCounterButtonClick() {
-    const counterNumber = counters.length
-    const newCounter = {
-      value: 0,
-      incrementBy: 1,
-      decrementBy: 1,
-      name: `Counter ${counterNumber}`,
-    }
-    const newCounters = [...counters, newCounter]
-    setCounters(newCounters)
-  }
-
+  // Render list of counters from state
   const counterList = counters.map((counter, i) => {
     return (
       <Box key={i}>
@@ -215,6 +215,10 @@ function CounterList() {
       </Box>
     )
   })
+
+  // ================================================================================
+  // RENDER COUNTER LIST
+  // ================================================================================
   return (
     <Box>
       <Stack
@@ -236,6 +240,7 @@ function CounterList() {
       </Box>
       <DeleteCounterDialog
         open={deleteDialog.open}
+        targetName={deleteDialog.target !== null ? counters[deleteDialog.target].name : ''}
         confirmOnClick={handleDeleteConfirmButtonClick}
         closeOnClick={handleDeleteCloseButtonClick}
       />
@@ -254,11 +259,7 @@ export default function AppContainer() {
             width: 1,
           }}
         >
-          <Typography
-            variant="h4"
-            component="h1"
-            gutterBottom
-          >
+          <Typography variant="h4" component="h1" gutterBottom>
             Counters
           </Typography>
           <CounterList />
