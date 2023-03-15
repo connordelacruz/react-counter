@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import {Box, Button, ButtonGroup, Container, Divider, IconButton, Stack, TextField, Typography} from "@mui/material";
-import {AddCircleOutline, Clear, Edit, RemoveCircleOutline} from "@mui/icons-material";
+import {AddBox, AddCircleOutline, Clear, Edit, RemoveCircleOutline} from "@mui/icons-material";
 import Grid from "@mui/material/Unstable_Grid2";
 
 
@@ -142,8 +142,8 @@ function CounterList() {
         sx={{ my: 4 }}
       >
         <Button
-          variant="contained"
-          fullWidth
+          variant="contained" size="large" disableElevation fullWidth
+          startIcon={<AddBox/>}
           onClick={() => handleNewCounterButtonClick()}
         >
           Create New Counter
