@@ -1,9 +1,21 @@
 import { useState } from 'react'
-import {Box, Button, ButtonGroup, Container, Divider, IconButton, Stack, TextField, Typography} from "@mui/material";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Container,
+  Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
+  Divider,
+  IconButton,
+  Stack,
+  TextField,
+  Typography
+} from "@mui/material";
 import {AddBox, AddCircleOutline, Clear, Edit, RemoveCircleOutline} from "@mui/icons-material";
 import Grid from "@mui/material/Unstable_Grid2";
 
 
+// Counter Component
 function Counter({ value, name,
                    nameOnChange, decrementOnClick, incrementOnClick,
                    deleteOnClick
@@ -63,7 +75,43 @@ function Counter({ value, name,
 }
 
 
+// Delete confirmation dialog
+// TODO: make code consistent, add prop for target name
+function DeleteCounterDialog({ open, confirmOnClick, closeOnClick }) {
+  return (
+    <Dialog
+      open={open}
+      onClose={closeOnClick}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+    >
+      <DialogTitle id="alert-dialog-title">
+        Delete Counter
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          Are you sure you want to delete this counter?
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={closeOnClick} autoFocus>
+          Cancel
+        </Button>
+        <Button onClick={confirmOnClick}>
+          Confirm
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+
+
+// List of Counters
 function CounterList() {
+  // ================================================================================
+  // STATE
+  // ================================================================================
+  // Counters list
   const [counters, setCounters] = useState(
     [
       {
@@ -74,13 +122,25 @@ function CounterList() {
       }
     ]
   )
+  // Delete dialog
+  const [deleteDialog, setDeleteDialog] = useState(
+    {
+      open: false,
+      target: null,
+    }
+  )
 
+  // ================================================================================
+  // COUNTER HANDLER FUNCTIONS
+  // ================================================================================
+  // Increment/decrement counter
   function handleCounterButtonClick(i, amountToAdd) {
     const newCounters = [...counters]
     newCounters[i].value = newCounters[i].value + amountToAdd
     setCounters(newCounters)
   }
 
+  // Modify counter name
   function handleNameTextInputChange(i) {
     return (newName) => {
       const newCounters = [...counters]
@@ -89,14 +149,39 @@ function CounterList() {
     }
   }
 
-  // TODO: confirmation dialog
+  // Open delete confirmation dialog
   function handleDeleteButtonClick(i) {
     return () => {
-      const newCounters = [...counters]
-      newCounters.splice(i, 1)
-      setCounters(newCounters)
+      // Set delete dialog target and open confirmation
+      setDeleteDialog({open: true, target: i})
     }
   }
+
+  // ================================================================================
+  // DELETE CONFIRMATION DIALOG HANDLER FUNCTIONS
+  // ================================================================================
+
+  // Confirm button click
+  function handleDeleteConfirmButtonClick() {
+    if (deleteDialog.target !== null) {
+      // Delete the target counter
+      const newCounters = [...counters]
+      newCounters.splice(deleteDialog.target, 1)
+      setCounters(newCounters)
+    }
+    // Clear delete target and close dialog
+    handleDeleteCloseButtonClick()
+  }
+
+  // Close button click
+  function handleDeleteCloseButtonClick() {
+    // Clear delete target and close dialog
+    setDeleteDialog({open: false, target: null})
+  }
+
+  // ================================================================================
+  // TODO: organize code sections from here
+  // ================================================================================
 
   function renderCounter(i) {
     return (
@@ -149,11 +234,17 @@ function CounterList() {
           Create New Counter
         </Button>
       </Box>
+      <DeleteCounterDialog
+        open={deleteDialog.open}
+        confirmOnClick={handleDeleteConfirmButtonClick}
+        closeOnClick={handleDeleteCloseButtonClick}
+      />
     </Box>
   )
 }
 
 
+// Root component
 export default function AppContainer() {
     return (
       <Container maxWidth="sm">
