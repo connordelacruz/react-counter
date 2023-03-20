@@ -6,7 +6,7 @@ import {
   Container,
   Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
   Divider,
-  IconButton,
+  IconButton, InputAdornment,
   Stack,
   TextField,
   Typography
@@ -18,7 +18,7 @@ import Grid from "@mui/material/Unstable_Grid2";
 // Counter Component
 function Counter({ value, name,
                    nameOnChange, decrementOnClick, incrementOnClick,
-                   deleteOnClick
+                   editOnClick, deleteOnClick
                  }) {
   return (
     <Box>
@@ -34,7 +34,7 @@ function Counter({ value, name,
         </Grid>
         <Grid xs={2} sx={{textAlign: 'right'}}>
           <ButtonGroup>
-            <IconButton>
+            <IconButton onClick={editOnClick}>
               <Edit/>
             </IconButton>
             <IconButton onClick={deleteOnClick}>
@@ -82,9 +82,7 @@ function DeleteCounterDialog({ open, targetName, confirmOnClick, closeOnClick })
       open={open}
       onClose={closeOnClick}
     >
-      <DialogTitle>
-        Delete Counter?
-      </DialogTitle>
+      <DialogTitle>Delete Counter?</DialogTitle>
       <DialogContent>
         <DialogContentText>
           Are you sure you want to delete <b>{targetName}</b>?
@@ -96,6 +94,77 @@ function DeleteCounterDialog({ open, targetName, confirmOnClick, closeOnClick })
         </Button>
         <Button onClick={confirmOnClick}>
           Confirm
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+
+
+// Edit counter dialog
+function EditCounterDialog({ open, counter, confirmOnClick, closeOnClick }) {
+  // TODO: figure out validation/sanitization
+  return (
+    <Dialog
+      open={open}
+      onClose={closeOnClick}
+    >
+      <DialogTitle>Edit Counter</DialogTitle>
+      <DialogContent>
+        <Grid container spacing={2} my={2}>
+          <Grid xs={12}>
+            <TextField
+              fullWidth
+              label="Name"
+              value={counter === null ? '' : counter.name}
+            />
+          </Grid>
+          <Grid xs={12}>
+          <TextField
+            fullWidth
+            type="number"
+            label="Value"
+            value={counter === null ? '' : counter.value}
+          />
+          </Grid>
+          <Grid xs={6}>
+            <TextField
+              fullWidth
+              type="number"
+              label="Subtract By"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <RemoveCircleOutline/>
+                  </InputAdornment>
+                )
+              }}
+              value={counter === null ? '' : counter.decrementBy}
+            />
+          </Grid>
+          <Grid xs={6}>
+            <TextField
+              fullWidth
+              type="number"
+              label="Add By"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <AddCircleOutline/>
+                  </InputAdornment>
+                )
+              }}
+              value={counter === null ? '' : counter.incrementBy}
+            />
+          </Grid>
+        </Grid>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={closeOnClick}>
+          Cancel
+        </Button>
+        <Button onClick={confirmOnClick}>
+          Save
         </Button>
       </DialogActions>
     </Dialog>
@@ -126,6 +195,13 @@ function CounterList() {
       target: null,
     }
   )
+  // Edit dialog
+  const [editDialog, setEditDialog] = useState(
+    {
+      open: false,
+      counter: null,
+    }
+  )
 
   // ================================================================================
   // COUNTER HANDLER FUNCTIONS
@@ -138,6 +214,7 @@ function CounterList() {
   }
 
   // Modify counter name
+  // TODO: remove once edit is implemented
   function handleNameTextInputChange(i) {
     return (newName) => {
       const newCounters = [...counters]
@@ -151,6 +228,14 @@ function CounterList() {
     return () => {
       // Set delete dialog target and open confirmation
       setDeleteDialog({open: true, target: i})
+    }
+  }
+
+  // Open edit dialog
+  function handleEditButtonClick(i) {
+    return () => {
+      const counter = counters[i]
+      setEditDialog({open: true, counter: counter})
     }
   }
 
@@ -174,6 +259,22 @@ function CounterList() {
   function handleDeleteCloseButtonClick() {
     // Clear delete target and close dialog
     setDeleteDialog({open: false, target: null})
+  }
+
+  // ================================================================================
+  // EDIT DIALOG HANDLER FUNCTIONS
+  // ================================================================================
+
+  // Confirm button click
+  function handleEditConfirmButtonClick() {
+    // TODO: implement
+    handleEditCloseButtonClick()
+  }
+
+  // Close button click
+  function handleEditCloseButtonClick() {
+    // Clear counter and close dialog
+    setEditDialog({open: false, counter: null})
   }
 
   // ================================================================================
@@ -202,6 +303,7 @@ function CounterList() {
         nameOnChange={handleNameTextInputChange(i)}
         incrementOnClick={() => handleCounterButtonClick(i, counters[i].incrementBy)}
         decrementOnClick={() => handleCounterButtonClick(i, -1 * counters[i].decrementBy)}
+        editOnClick={handleEditButtonClick(i)}
         deleteOnClick={handleDeleteButtonClick(i)}
       />
     )
@@ -244,6 +346,12 @@ function CounterList() {
         confirmOnClick={handleDeleteConfirmButtonClick}
         closeOnClick={handleDeleteCloseButtonClick}
       />
+      <EditCounterDialog
+        open={editDialog.open}
+        counter={editDialog.counter}
+        confirmOnClick={handleEditConfirmButtonClick}
+        closeOnClick={handleEditCloseButtonClick}
+        />
     </Box>
   )
 }
