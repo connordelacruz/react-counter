@@ -102,8 +102,11 @@ function DeleteCounterDialog({ open, targetName, confirmOnClick, closeOnClick })
 
 
 // Edit counter dialog
-function EditCounterDialog({ open, counter, confirmOnClick, closeOnClick }) {
-  // TODO: figure out validation/sanitization
+function EditCounterDialog({ open,
+                             currentName, currentValue, currentDecrementBy, currentIncrementBy,
+                             confirmOnClick, closeOnClick
+                           }) {
+  // TODO: figure out validation/sanitization (add ids to form prob?)
   return (
     <Dialog
       open={open}
@@ -116,45 +119,44 @@ function EditCounterDialog({ open, counter, confirmOnClick, closeOnClick }) {
             <TextField
               fullWidth
               label="Name"
-              value={counter === null ? '' : counter.name}
+              defaultValue={currentName}
             />
           </Grid>
           <Grid xs={12}>
           <TextField
-            fullWidth
-            type="number"
+            fullWidth type="number" InputLabelProps={{ shrink: true }}
             label="Value"
-            value={counter === null ? '' : counter.value}
+            defaultValue={currentValue}
           />
           </Grid>
           <Grid xs={6}>
             <TextField
-              fullWidth
-              type="number"
-              label="Subtract By"
+              fullWidth type="number"
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
                     <RemoveCircleOutline/>
                   </InputAdornment>
-                )
+                ),
+                shrink: true
               }}
-              value={counter === null ? '' : counter.decrementBy}
+              label="Subtract By"
+              defaultValue={currentDecrementBy}
             />
           </Grid>
           <Grid xs={6}>
             <TextField
-              fullWidth
-              type="number"
-              label="Add By"
+              fullWidth type="number"
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
                     <AddCircleOutline/>
                   </InputAdornment>
-                )
+                ),
+                shrink: true
               }}
-              value={counter === null ? '' : counter.incrementBy}
+              label="Add By"
+              defaultValue={currentIncrementBy}
             />
           </Grid>
         </Grid>
@@ -199,7 +201,7 @@ function CounterList() {
   const [editDialog, setEditDialog] = useState(
     {
       open: false,
-      counter: null,
+      target: null,
     }
   )
 
@@ -234,8 +236,7 @@ function CounterList() {
   // Open edit dialog
   function handleEditButtonClick(i) {
     return () => {
-      const counter = counters[i]
-      setEditDialog({open: true, counter: counter})
+      setEditDialog({open: true, target: i})
     }
   }
 
@@ -274,7 +275,7 @@ function CounterList() {
   // Close button click
   function handleEditCloseButtonClick() {
     // Clear counter and close dialog
-    setEditDialog({open: false, counter: null})
+    setEditDialog({open: false, target: null})
   }
 
   // ================================================================================
@@ -348,7 +349,10 @@ function CounterList() {
       />
       <EditCounterDialog
         open={editDialog.open}
-        counter={editDialog.counter}
+        currentName={editDialog.target !== null ? counters[editDialog.target].name : ''}
+        currentValue={editDialog.target !== null ? counters[editDialog.target].value : ''}
+        currentDecrementBy={editDialog.target !== null ? counters[editDialog.target].decrementBy : ''}
+        currentIncrementBy={editDialog.target !== null ? counters[editDialog.target].incrementBy : ''}
         confirmOnClick={handleEditConfirmButtonClick}
         closeOnClick={handleEditCloseButtonClick}
         />
