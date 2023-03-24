@@ -14,23 +14,19 @@ import {
 import {AddBox, AddCircleOutline, Clear, Edit, RemoveCircleOutline} from "@mui/icons-material";
 import Grid from "@mui/material/Unstable_Grid2";
 
+// TODO: https://mui.com/material-ui/react-button/#material-you-version
+
 
 // Counter Component
-function Counter({ value, name,
-                   nameOnChange, decrementOnClick, incrementOnClick,
+function Counter({ value, name, decrementBy, incrementBy,
+                   decrementOnClick, incrementOnClick,
                    editOnClick, deleteOnClick
                  }) {
   return (
     <Box>
       <Grid container>
         <Grid xs={10}>
-          <TextField
-            variant="standard" size="small" fullWidth
-            value={name}
-            onChange={(event) => {
-              nameOnChange(event.target.value)
-            }}
-          />
+          <Typography variant="h5">{name}</Typography>
         </Grid>
         <Grid xs={2} sx={{textAlign: 'right'}}>
           <ButtonGroup>
@@ -50,24 +46,22 @@ function Counter({ value, name,
       >
         <Button
           variant="outlined" size="large" fullWidth
+          startIcon={<RemoveCircleOutline/>}
           onClick={decrementOnClick}
         >
-          <RemoveCircleOutline/>
+          {decrementBy}
         </Button>
         <Box
           my={2} sx={{width: 1}}
         >
-          <Typography
-            variant="h3" sx={{textAlign: 'center'}}
-          >
-            {value}
-          </Typography>
+          <Typography variant="h3" sx={{textAlign: 'center'}}>{value}</Typography>
         </Box>
         <Button
           variant="outlined" size="large" fullWidth
+          startIcon={<AddCircleOutline/>}
           onClick={incrementOnClick}
         >
-          <AddCircleOutline/>
+          {incrementBy}
         </Button>
       </Stack>
     </Box>
@@ -103,60 +97,90 @@ function DeleteCounterDialog({ open, targetName, confirmOnClick, closeOnClick })
 
 // Edit counter dialog
 function EditCounterDialog({ open,
-                             currentName, currentValue, currentDecrementBy, currentIncrementBy,
+                             form, setForm,
                              confirmOnClick, closeOnClick
                            }) {
-  // TODO: figure out validation/sanitization (add ids to form prob?)
+
+  // TODO: just get it to work without validation
+  // TODO: figure out validation on submit
+
+  function onUpdateField(e) {
+    const newForm = {
+      ...form,
+      [e.target.name]: e.target.value,
+    }
+    setForm(newForm)
+  }
+
+  // TODO: remove/use for validation?
+  // function onUpdateNumericField(e) {
+  //   const numericValMatch = e.target.value.match(/-?\d+/g)
+  //   // Update input value then pass this on to the usual handler
+  //   e.target.value = numericValMatch === null ? '' : numericValMatch[0]
+  //   onUpdateField(e)
+  // }
+
+
   return (
-    <Dialog
-      open={open}
-      onClose={closeOnClick}
-    >
+    <Dialog open={open} onClose={closeOnClick}>
       <DialogTitle>Edit Counter</DialogTitle>
       <DialogContent>
         <Grid container spacing={2} my={2}>
           <Grid xs={12}>
             <TextField
               fullWidth
+              inputProps={{ name: 'name' }}
+              onChange={onUpdateField}
               label="Name"
-              defaultValue={currentName}
+              defaultValue={form.name}
             />
           </Grid>
           <Grid xs={12}>
           <TextField
-            fullWidth type="number" InputLabelProps={{ shrink: true }}
+            fullWidth
+            type="number"
+            InputLabelProps={{
+              name: 'value',
+              shrink: true,
+            }}
+            onChange={onUpdateField}
             label="Value"
-            defaultValue={currentValue}
+            defaultValue={form.value}
           />
           </Grid>
           <Grid xs={6}>
             <TextField
-              fullWidth type="number"
+              fullWidth
+              type="number"
               InputProps={{
+                name: 'decrementBy',
                 startAdornment: (
                   <InputAdornment position="start">
                     <RemoveCircleOutline/>
                   </InputAdornment>
                 ),
-                shrink: true
+                shrink: true,
               }}
+              onChange={onUpdateField}
               label="Subtract By"
-              defaultValue={currentDecrementBy}
+              defaultValue={form.decrementBy}
             />
           </Grid>
           <Grid xs={6}>
             <TextField
               fullWidth type="number"
               InputProps={{
+                name: 'incrementBy',
                 startAdornment: (
                   <InputAdornment position="start">
                     <AddCircleOutline/>
                   </InputAdornment>
                 ),
-                shrink: true
+                shrink: true,
               }}
+              onChange={onUpdateField}
               label="Add By"
-              defaultValue={currentIncrementBy}
+              defaultValue={form.incrementBy}
             />
           </Grid>
         </Grid>
@@ -202,8 +226,20 @@ function CounterList() {
     {
       open: false,
       target: null,
+      form: {
+        name: '',
+        value: '',
+        decrementBy: '',
+        incrementBy: '',
+      },
     }
   )
+  function setEditForm(newForm) {
+    setEditDialog({
+      ...editDialog,
+      form: {...newForm},
+    })
+  }
 
   // ================================================================================
   // COUNTER HANDLER FUNCTIONS
@@ -213,16 +249,6 @@ function CounterList() {
     const newCounters = [...counters]
     newCounters[i].value = newCounters[i].value + amountToAdd
     setCounters(newCounters)
-  }
-
-  // Modify counter name
-  // TODO: remove once edit is implemented
-  function handleNameTextInputChange(i) {
-    return (newName) => {
-      const newCounters = [...counters]
-      newCounters[i].name = newName
-      setCounters(newCounters)
-    }
   }
 
   // Open delete confirmation dialog
@@ -236,7 +262,12 @@ function CounterList() {
   // Open edit dialog
   function handleEditButtonClick(i) {
     return () => {
-      setEditDialog({open: true, target: i})
+      const targetCounter = {...counters[i]}
+      setEditDialog({
+        open: true,
+        target: i,
+        form: targetCounter,
+      })
     }
   }
 
@@ -268,14 +299,34 @@ function CounterList() {
 
   // Confirm button click
   function handleEditConfirmButtonClick() {
-    // TODO: implement
+    // TODO: rename to indicate that values should be validated
+    if (editDialog.target !== null && counters[editDialog.target] !== undefined) {
+      const newCounters = [...counters]
+      const updatedCounter = {
+        name: editDialog.form.name.trim(),
+        value: parseInt(editDialog.form.value),
+        decrementBy: parseInt(editDialog.form.decrementBy),
+        incrementBy: parseInt(editDialog.form.incrementBy),
+      }
+      newCounters[editDialog.target] = updatedCounter
+      setCounters(newCounters)
+    }
     handleEditCloseButtonClick()
   }
 
   // Close button click
   function handleEditCloseButtonClick() {
     // Clear counter and close dialog
-    setEditDialog({open: false, target: null})
+    setEditDialog({
+      open: false,
+      target: null,
+      form: {
+        name: '',
+        value: '',
+        decrementBy: '',
+        incrementBy: '',
+      }
+    })
   }
 
   // ================================================================================
@@ -301,7 +352,8 @@ function CounterList() {
       <Counter
         value={counters[i].value}
         name={counters[i].name}
-        nameOnChange={handleNameTextInputChange(i)}
+        decrementBy={counters[i].decrementBy}
+        incrementBy={counters[i].incrementBy}
         incrementOnClick={() => handleCounterButtonClick(i, counters[i].incrementBy)}
         decrementOnClick={() => handleCounterButtonClick(i, -1 * counters[i].decrementBy)}
         editOnClick={handleEditButtonClick(i)}
@@ -349,10 +401,7 @@ function CounterList() {
       />
       <EditCounterDialog
         open={editDialog.open}
-        currentName={editDialog.target !== null ? counters[editDialog.target].name : ''}
-        currentValue={editDialog.target !== null ? counters[editDialog.target].value : ''}
-        currentDecrementBy={editDialog.target !== null ? counters[editDialog.target].decrementBy : ''}
-        currentIncrementBy={editDialog.target !== null ? counters[editDialog.target].incrementBy : ''}
+        form={editDialog.form} setForm={setEditForm}
         confirmOnClick={handleEditConfirmButtonClick}
         closeOnClick={handleEditCloseButtonClick}
         />
