@@ -6,13 +6,13 @@ import {
   ButtonGroup,
   Container,
   Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-  Divider,
+  Divider, Fab,
   IconButton, InputAdornment,
   Stack,
   TextField, Toolbar,
   Typography
 } from "@mui/material";
-import {AddBox, AddCircleOutline, Clear, Edit, RemoveCircleOutline} from "@mui/icons-material";
+import {Add, AddBox, AddCircleOutline, Clear, Edit, RemoveCircleOutline} from "@mui/icons-material";
 import Grid from "@mui/material/Unstable_Grid2";
 
 // TODO: https://mui.com/material-ui/react-button/#material-you-version
@@ -39,23 +39,17 @@ function Counter({ value, name, decrementBy, incrementBy,
         </Toolbar>
       </AppBar>
       <Stack alignItems="center" direction="row" spacing={2} my={2}>
-        <Button
-          variant="outlined" size="large" fullWidth
-          startIcon={<RemoveCircleOutline/>}
-          onClick={decrementOnClick}
-        >
+        <Button variant="outlined" size="large" fullWidth
+                startIcon={<RemoveCircleOutline/>}
+                onClick={decrementOnClick}>
           {decrementBy}
         </Button>
-        <Box
-          my={2} sx={{width: 1}}
-        >
+        <Box my={2} sx={{width: 1}}>
           <Typography variant="h3" sx={{textAlign: 'center'}}>{value}</Typography>
         </Box>
-        <Button
-          variant="outlined" size="large" fullWidth
-          startIcon={<AddCircleOutline/>}
-          onClick={incrementOnClick}
-        >
+        <Button variant="outlined" size="large" fullWidth
+                startIcon={<AddCircleOutline/>}
+                onClick={incrementOnClick}>
           {incrementBy}
         </Button>
       </Stack>
@@ -372,14 +366,15 @@ function CounterList() {
   return (
     <Box>
       <Stack spacing={2}>{counterList}</Stack>
-      <Box sx={{ my: 4 }}>
-        <Button
-          variant="contained" size="large" disableElevation fullWidth
-          startIcon={<AddBox/>}
-          onClick={() => handleNewCounterButtonClick()}
-        >
+      <Box sx={{
+        my: 4,
+        textAlign: 'right'
+      }}>
+        <Fab color="success" variant="extended" size="large"
+             onClick={() => handleNewCounterButtonClick()}>
+          <Add sx={{ mr: 1 }}/>
           Create New Counter
-        </Button>
+        </Fab>
       </Box>
       <DeleteCounterDialog
         open={deleteDialog.open}
