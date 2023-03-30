@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import {
+  AppBar,
   Box,
   Button,
   ButtonGroup,
@@ -8,7 +9,7 @@ import {
   Divider,
   IconButton, InputAdornment,
   Stack,
-  TextField,
+  TextField, Toolbar,
   Typography
 } from "@mui/material";
 import {AddBox, AddCircleOutline, Clear, Edit, RemoveCircleOutline} from "@mui/icons-material";
@@ -24,26 +25,20 @@ function Counter({ value, name, decrementBy, incrementBy,
                  }) {
   return (
     <Box>
-      <Grid container>
-        <Grid xs={10}>
-          <Typography variant="h5">{name}</Typography>
-        </Grid>
-        <Grid xs={2} sx={{textAlign: 'right'}}>
+      <AppBar position="static" elevation={0}>
+        <Toolbar>
+          <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>{name}</Typography>
           <ButtonGroup>
-            <IconButton onClick={editOnClick}>
+            <IconButton color="inherit" onClick={editOnClick}>
               <Edit/>
             </IconButton>
-            <IconButton onClick={deleteOnClick}>
+            <IconButton color="inherit" onClick={deleteOnClick}>
               <Clear/>
             </IconButton>
           </ButtonGroup>
-        </Grid>
-      </Grid>
-      <Stack
-        alignItems="center"
-        direction="row"
-        spacing={2}
-      >
+        </Toolbar>
+      </AppBar>
+      <Stack alignItems="center" direction="row" spacing={2} my={2}>
         <Button
           variant="outlined" size="large" fullWidth
           startIcon={<RemoveCircleOutline/>}
@@ -376,15 +371,8 @@ function CounterList() {
   // ================================================================================
   return (
     <Box>
-      <Stack
-        divider={<Divider orientation="horizontal" flexItem />}
-        spacing={2}
-      >
-        {counterList}
-      </Stack>
-      <Box
-        sx={{ my: 4 }}
-      >
+      <Stack spacing={2}>{counterList}</Stack>
+      <Box sx={{ my: 4 }}>
         <Button
           variant="contained" size="large" disableElevation fullWidth
           startIcon={<AddBox/>}
@@ -420,9 +408,7 @@ export default function AppContainer() {
             width: 1,
           }}
         >
-          <Typography variant="h4" component="h1" gutterBottom>
-            Counters
-          </Typography>
+          <Typography variant="h4" component="h1" gutterBottom>Counters</Typography>
           <CounterList />
         </Box>
       </Container>
