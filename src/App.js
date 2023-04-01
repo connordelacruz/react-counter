@@ -86,7 +86,7 @@ function DeleteCounterDialog({ open, targetName, confirmOnClick, closeOnClick })
 
 // Edit counter dialog
 function EditCounterDialog({ open,
-                             form, setForm,
+                             currentCounter, setForm,
                              confirmOnClick, closeOnClick
                            }) {
 
@@ -95,7 +95,7 @@ function EditCounterDialog({ open,
 
   function onUpdateField(e) {
     const newForm = {
-      ...form,
+      ...currentCounter,
       [e.target.name]: e.target.value,
     }
     setForm(newForm)
@@ -121,7 +121,7 @@ function EditCounterDialog({ open,
               inputProps={{ name: 'name' }}
               onChange={onUpdateField}
               label="Name"
-              defaultValue={form.name}
+              defaultValue={currentCounter.name}
             />
           </Grid>
           <Grid xs={12}>
@@ -134,7 +134,7 @@ function EditCounterDialog({ open,
             }}
             onChange={onUpdateField}
             label="Value"
-            defaultValue={form.value}
+            defaultValue={currentCounter.value}
           />
           </Grid>
           <Grid xs={6}>
@@ -152,7 +152,7 @@ function EditCounterDialog({ open,
               }}
               onChange={onUpdateField}
               label="Subtract By"
-              defaultValue={form.decrementBy}
+              defaultValue={currentCounter.decrementBy}
             />
           </Grid>
           <Grid xs={6}>
@@ -169,7 +169,7 @@ function EditCounterDialog({ open,
               }}
               onChange={onUpdateField}
               label="Add By"
-              defaultValue={form.incrementBy}
+              defaultValue={currentCounter.incrementBy}
             />
           </Grid>
         </Grid>
@@ -190,9 +190,12 @@ function EditCounterDialog({ open,
 // List of Counters
 function CounterList() {
   // ================================================================================
-  // STATE
+  // STATE AND HELPER FUNCTIONS
   // ================================================================================
+  // --------------------------------------------------------------------------------
   // Counters list
+  // --------------------------------------------------------------------------------
+  // State
   const [counters, setCounters] = useState(
     [
       {
@@ -203,42 +206,37 @@ function CounterList() {
       }
     ]
   )
-  // Delete dialog
-  const [deleteDialog, setDeleteDialog] = useState(
-    {
-      open: false,
-      target: null,
-    }
-  )
-  // Edit dialog
-  const [editDialog, setEditDialog] = useState(
-    {
-      open: false,
-      target: null,
-      form: {
-        name: '',
-        value: '',
-        decrementBy: '',
-        incrementBy: '',
-      },
-    }
-  )
-  function setEditForm(newForm) {
-    setEditDialog({
-      ...editDialog,
-      form: {...newForm},
-    })
-  }
 
-  // ================================================================================
-  // COUNTER HANDLER FUNCTIONS
-  // ================================================================================
   // Increment/decrement counter
   function handleCounterButtonClick(i, amountToAdd) {
     const newCounters = [...counters]
     newCounters[i].value = newCounters[i].value + amountToAdd
     setCounters(newCounters)
   }
+
+  // New counter button click
+  function handleNewCounterButtonClick() {
+    const counterNumber = counters.length
+    const newCounter = {
+      value: 0,
+      incrementBy: 1,
+      decrementBy: 1,
+      name: `Counter ${counterNumber}`,
+    }
+    const newCounters = [...counters, newCounter]
+    setCounters(newCounters)
+  }
+
+  // --------------------------------------------------------------------------------
+  // Delete dialog
+  // --------------------------------------------------------------------------------
+  // State
+  const [deleteDialog, setDeleteDialog] = useState(
+    {
+      open: false,
+      target: null,
+    }
+  )
 
   // Open delete confirmation dialog
   function handleDeleteButtonClick(i) {
@@ -247,22 +245,6 @@ function CounterList() {
       setDeleteDialog({open: true, target: i})
     }
   }
-
-  // Open edit dialog
-  function handleEditButtonClick(i) {
-    return () => {
-      const targetCounter = {...counters[i]}
-      setEditDialog({
-        open: true,
-        target: i,
-        form: targetCounter,
-      })
-    }
-  }
-
-  // ================================================================================
-  // DELETE CONFIRMATION DIALOG HANDLER FUNCTIONS
-  // ================================================================================
 
   // Confirm button click
   function handleDeleteConfirmButtonClick() {
@@ -282,9 +264,43 @@ function CounterList() {
     setDeleteDialog({open: false, target: null})
   }
 
-  // ================================================================================
-  // EDIT DIALOG HANDLER FUNCTIONS
-  // ================================================================================
+  // --------------------------------------------------------------------------------
+  // Edit dialog
+  // --------------------------------------------------------------------------------
+  // State
+  const [editDialog, setEditDialog] = useState(
+    {
+      open: false,
+      target: null,
+      form: {
+        name: '',
+        value: '',
+        decrementBy: '',
+        incrementBy: '',
+      },
+    }
+  )
+
+  // Open edit dialog
+  function handleEditButtonClick(i) {
+    return () => {
+      const targetCounter = {...counters[i]}
+      setEditDialog({
+        open: true,
+        target: i,
+        form: targetCounter,
+      })
+    }
+  }
+
+  // TODO: pass in function to set validated counter instead
+  // Update edit form (passed as prop to EditDialog)
+  function setEditForm(newForm) {
+    setEditDialog({
+      ...editDialog,
+      form: {...newForm},
+    })
+  }
 
   // Confirm button click
   function handleEditConfirmButtonClick() {
@@ -319,50 +335,27 @@ function CounterList() {
   }
 
   // ================================================================================
-  // CREATE / RENDER COUNTER FUNCTIONS
+  // RENDER COUNTER LIST
   // ================================================================================
-
-  // New counter button click
-  function handleNewCounterButtonClick() {
-    const counterNumber = counters.length
-    const newCounter = {
-      value: 0,
-      incrementBy: 1,
-      decrementBy: 1,
-      name: `Counter ${counterNumber}`,
-    }
-    const newCounters = [...counters, newCounter]
-    setCounters(newCounters)
-  }
-
-  // Render Counter component
-  function renderCounter(i) {
-    return (
-      <Counter
-        value={counters[i].value}
-        name={counters[i].name}
-        decrementBy={counters[i].decrementBy}
-        incrementBy={counters[i].incrementBy}
-        incrementOnClick={() => handleCounterButtonClick(i, counters[i].incrementBy)}
-        decrementOnClick={() => handleCounterButtonClick(i, -1 * counters[i].decrementBy)}
-        editOnClick={handleEditButtonClick(i)}
-        deleteOnClick={handleDeleteButtonClick(i)}
-      />
-    )
-  }
 
   // Render list of counters from state
   const counterList = counters.map((counter, i) => {
     return (
       <Box key={i}>
-        {renderCounter(i)}
+        <Counter
+          value={counters[i].value}
+          name={counters[i].name}
+          decrementBy={counters[i].decrementBy}
+          incrementBy={counters[i].incrementBy}
+          incrementOnClick={() => handleCounterButtonClick(i, counters[i].incrementBy)}
+          decrementOnClick={() => handleCounterButtonClick(i, -1 * counters[i].decrementBy)}
+          editOnClick={handleEditButtonClick(i)}
+          deleteOnClick={handleDeleteButtonClick(i)}
+        />
       </Box>
     )
   })
 
-  // ================================================================================
-  // RENDER COUNTER LIST
-  // ================================================================================
   return (
     <Box>
       <Stack spacing={2}>{counterList}</Stack>
@@ -384,7 +377,7 @@ function CounterList() {
       />
       <EditCounterDialog
         open={editDialog.open}
-        form={editDialog.form} setForm={setEditForm}
+        currentCounter={editDialog.form} setForm={setEditForm}
         confirmOnClick={handleEditConfirmButtonClick}
         closeOnClick={handleEditCloseButtonClick}
         />
