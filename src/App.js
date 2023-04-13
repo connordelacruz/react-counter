@@ -85,33 +85,156 @@ function DeleteCounterDialog({ open, targetName, confirmOnClick, closeOnClick })
 
 
 // Edit counter dialog
+// TODO: make prop names consistent
 function EditCounterDialog({ open,
-                             currentCounter, setForm,
-                             confirmOnClick, closeOnClick
+                             currentCounter, setUpdatedCounter,
+                             closeOnClick
                            }) {
+  // Default form state (for resetting on close)
+  // Initialize values to null, if they're unchanged we'll ignore them when updating the counter
+  const defaultFormState = {
+    name: {
+      value: null,
+      error: false,
+      errorMessage: '',
+    },
+    value: {
+      value: null,
+      error: false,
+      errorMessage: '',
+    },
+    decrementBy: {
+      value: null,
+      error: false,
+      errorMessage: '',
+    },
+    incrementBy: {
+      value: null,
+      error: false,
+      errorMessage: '',
+    },
+  }
+  // Initialize form state
+  const [form, setForm] = useState({...defaultFormState})
 
-  // TODO: just get it to work without validation
-  // TODO: figure out validation on submit
-
+  // Update form state
   function onUpdateField(e) {
     const newForm = {
-      ...currentCounter,
-      [e.target.name]: e.target.value,
+      ...form,
+      [e.target.name]: {
+        value: e.target.value,
+        // Clear errors
+        error: false,
+        errorMessage: ''
+      }
     }
     setForm(newForm)
   }
 
-  // TODO: remove/use for validation?
-  // function onUpdateNumericField(e) {
-  //   const numericValMatch = e.target.value.match(/-?\d+/g)
-  //   // Update input value then pass this on to the usual handler
-  //   e.target.value = numericValMatch === null ? '' : numericValMatch[0]
-  //   onUpdateField(e)
-  // }
+  // Reset form on close
+  function onCloseHandler() {
+    setForm({...defaultFormState})
+    closeOnClick()
+  }
 
+  // Helper function for numeric field validation
+  function sanitizeAndValidateNumericInput(inputState) {
+    const validatedInputState = {
+      value: null,
+      error: false,
+      errorMessage: ''
+    }
+    
+    // Attempt to parse int
+    validatedInputState.value = parseInt(inputState.value)
+    if (isNaN(validatedInputState.value)) {
+      validatedInputState.error = true
+      validatedInputState.errorMessage = 'Value must be an integer.'
+    }
+    return validatedInputState
+  }
+
+  // Cleans up non-null form values, then attempts to validate them.
+  // If invalid, update state of each to show error message and set error to true.
+  // Returns true if everything is valid, false if there's any issues
+  function sanitizeAndValidateFormValues() {
+    let errorsDetected = false
+
+    // Cleanup name and ensure it isn't blank
+    if (form.name.value !== null) {
+      const sanitizedName = {
+        value: form.name.value.trim(),
+        error: false,
+        errorMessage: ''
+      }
+      if (sanitizedName.value === '') {
+        errorsDetected = true
+        sanitizedName.error = true
+        sanitizedName.errorMessage = 'Name cannot be blank.'
+      }
+      // Update state
+      setForm({
+        ...form,
+        name: {...sanitizedName}
+      })
+      console.log(form)
+    }
+    // Ensure numeric inputs can be parsed into ints
+    if (form.value.value !== null) {
+      const sanitizedValue = sanitizeAndValidateNumericInput(form.value)
+      errorsDetected &= sanitizedValue.error
+      // Update state
+      setForm({
+        ...form,
+        value: {...sanitizedValue}
+      })
+    }
+    if (form.decrementBy.value !== null) {
+      const sanitizedDecrementBy = sanitizeAndValidateNumericInput(form.decrementBy)
+      errorsDetected &= sanitizedDecrementBy.error
+      // Update state
+      setForm({
+        ...form,
+        decrementBy: {...sanitizedDecrementBy}
+      })
+    }
+    if (form.incrementBy.value !== null) {
+      const sanitizedIncrementBy = sanitizeAndValidateNumericInput(form.incrementBy)
+      errorsDetected &= sanitizedIncrementBy.error
+      // Update state
+      setForm({
+        ...form,
+        incrementBy: {...sanitizedIncrementBy}
+      })
+    }
+
+    // If everything checks out, return true, else false
+    return errorsDetected
+  }
+
+  // Validate form inputs and update counter if successful
+  function onConfirmHandler() {
+    // Update form state and check for errors
+    const errorsDetected = sanitizeAndValidateFormValues()
+    // Update counter and close dialog on success
+    if (!errorsDetected) {
+      const newCounter = {...currentCounter}
+      // Iterate thru form values and, if not-null, set newCounter values accordingly
+      for (const prop in form) {
+        if (form[prop].value !== null) {
+          newCounter[prop] = form[prop].value
+        }
+      }
+
+      // Update counter
+      setUpdatedCounter(newCounter)
+      // Close dialog
+      onCloseHandler()
+    }
+  }
 
   return (
-    <Dialog open={open} onClose={closeOnClick}>
+    <Dialog open={open} onClose={onCloseHandler}>
       <DialogTitle>Edit Counter</DialogTitle>
       <DialogContent>
         <Grid container spacing={2} my={2}>
@@ -119,6 +242,8 @@ function EditCounterDialog({ open,
             <TextField
               fullWidth
               inputProps={{ name: 'name' }}
+              error={form.name.error}
+              helperText={form.name.errorMessage}
               onChange={onUpdateField}
               label="Name"
               defaultValue={currentCounter.name}
@@ -128,10 +253,12 @@ function EditCounterDialog({ open,
           <TextField
             fullWidth
             type="number"
+            inputProps={{ name: 'value' }}
             InputLabelProps={{
-              name: 'value',
               shrink: true,
             }}
+            error={form.value.error}
+            helperText={form.value.errorMessage}
             onChange={onUpdateField}
             label="Value"
             defaultValue={currentCounter.value}
@@ -148,8 +275,9 @@ function EditCounterDialog({ open,
                     <RemoveCircleOutline/>
                   </InputAdornment>
                 ),
-                shrink: true,
               }}
+              error={form.decrementBy.error}
+              helperText={form.decrementBy.errorMessage}
               onChange={onUpdateField}
               label="Subtract By"
               defaultValue={currentCounter.decrementBy}
@@ -165,8 +293,9 @@ function EditCounterDialog({ open,
                     <AddCircleOutline/>
                   </InputAdornment>
                 ),
-                shrink: true,
               }}
+              error={form.incrementBy.error}
+              helperText={form.incrementBy.errorMessage}
               onChange={onUpdateField}
               label="Add By"
               defaultValue={currentCounter.incrementBy}
@@ -175,10 +304,10 @@ function EditCounterDialog({ open,
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={closeOnClick}>
+        <Button onClick={onCloseHandler}>
           Cancel
         </Button>
-        <Button onClick={confirmOnClick}>
+        <Button onClick={onConfirmHandler}>
           Save
         </Button>
       </DialogActions>
@@ -272,7 +401,7 @@ function CounterList() {
     {
       open: false,
       target: null,
-      form: {
+      currentCounter: {
         name: '',
         value: '',
         decrementBy: '',
@@ -288,35 +417,18 @@ function CounterList() {
       setEditDialog({
         open: true,
         target: i,
-        form: targetCounter,
+        currentCounter: targetCounter,
       })
     }
   }
 
-  // TODO: pass in function to set validated counter instead
-  // Update edit form (passed as prop to EditDialog)
-  function setEditForm(newForm) {
-    setEditDialog({
-      ...editDialog,
-      form: {...newForm},
-    })
-  }
-
-  // Confirm button click
-  function handleEditConfirmButtonClick() {
-    // TODO: rename to indicate that values should be validated
+  // Passed to EditDialog to update the counter
+  function setUpdatedCounter(updatedCounter) {
     if (editDialog.target !== null && counters[editDialog.target] !== undefined) {
       const newCounters = [...counters]
-      const updatedCounter = {
-        name: editDialog.form.name.trim(),
-        value: parseInt(editDialog.form.value),
-        decrementBy: parseInt(editDialog.form.decrementBy),
-        incrementBy: parseInt(editDialog.form.incrementBy),
-      }
-      newCounters[editDialog.target] = updatedCounter
+      newCounters[editDialog.target] = {...updatedCounter}
       setCounters(newCounters)
     }
-    handleEditCloseButtonClick()
   }
 
   // Close button click
@@ -325,7 +437,7 @@ function CounterList() {
     setEditDialog({
       open: false,
       target: null,
-      form: {
+      currentCounter: {
         name: '',
         value: '',
         decrementBy: '',
@@ -377,8 +489,8 @@ function CounterList() {
       />
       <EditCounterDialog
         open={editDialog.open}
-        currentCounter={editDialog.form} setForm={setEditForm}
-        confirmOnClick={handleEditConfirmButtonClick}
+        currentCounter={editDialog.currentCounter}
+        setUpdatedCounter={setUpdatedCounter}
         closeOnClick={handleEditCloseButtonClick}
         />
     </Box>
