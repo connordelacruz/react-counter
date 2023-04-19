@@ -90,65 +90,58 @@ function EditCounterDialog({ open,
                              currentCounter, setUpdatedCounter,
                              closeOnClick
                            }) {
-  // Default form state (for resetting on close)
+  // Form input states
   // Initialize values to null, if they're unchanged we'll ignore them when updating the counter
-  const defaultFormState = {
-    name: {
-      value: null,
-      error: false,
-      errorMessage: '',
-    },
-    value: {
-      value: null,
-      error: false,
-      errorMessage: '',
-    },
-    decrementBy: {
-      value: null,
-      error: false,
-      errorMessage: '',
-    },
-    incrementBy: {
-      value: null,
-      error: false,
-      errorMessage: '',
-    },
+  const [nameInput, setNameInput] = useState({
+    value: null,
+    errorMessage: null,
+  })
+  const [valueInput, setValueInput] = useState({
+    value: null,
+    errorMessage: null,
+  })
+  const [incrementByInput, setIncrementByInput] = useState({
+    value: null,
+    errorMessage: null,
+  })
+  const [decrementByInput, setDecrementByInput] = useState({
+    value: null,
+    errorMessage: null,
+  })
+  
+  // Function for resetting form input states
+  function resetInputStates() {
+    setNameInput({value: null, errorMessage: null})
+    setValueInput({value: null, errorMessage: null})
+    setIncrementByInput({value: null, errorMessage: null})
+    setDecrementByInput({value: null, errorMessage: null})
   }
-  // Initialize form state
-  const [form, setForm] = useState({...defaultFormState})
 
-  // Update form state
-  function onUpdateField(e) {
-    const newForm = {
-      ...form,
-      [e.target.name]: {
+  // Returns onChange handler function for an input
+  function inputOnChangeHandler(setStateMethod) {
+    return (e) => {
+      const newInput = {
         value: e.target.value,
         // Clear errors
-        error: false,
-        errorMessage: ''
+        errorMessage: null,
       }
+      setStateMethod(newInput)
     }
-    setForm(newForm)
   }
 
   // Reset form on close
   function onCloseHandler() {
-    setForm({...defaultFormState})
+    resetInputStates()
     closeOnClick()
   }
 
   // Helper function for numeric field validation
   function sanitizeAndValidateNumericInput(inputState) {
-    const validatedInputState = {
-      value: null,
-      error: false,
-      errorMessage: ''
-    }
+    const validatedInputState = {...inputState}
     
     // Attempt to parse int
     validatedInputState.value = parseInt(inputState.value)
     if (isNaN(validatedInputState.value)) {
-      validatedInputState.error = true
       validatedInputState.errorMessage = 'Value must be an integer.'
     }
     return validatedInputState
@@ -161,51 +154,36 @@ function EditCounterDialog({ open,
     let errorsDetected = false
 
     // Cleanup name and ensure it isn't blank
-    if (form.name.value !== null) {
+    if (nameInput.value !== null) {
       const sanitizedName = {
-        value: form.name.value.trim(),
-        error: false,
-        errorMessage: ''
+        value: nameInput.value.trim(),
+        errorMessage: null,
       }
       if (sanitizedName.value === '') {
         errorsDetected = true
-        sanitizedName.error = true
         sanitizedName.errorMessage = 'Name cannot be blank.'
       }
       // Update state
-      setForm({
-        ...form,
-        name: {...sanitizedName}
-      })
-      console.log(form)
+      setNameInput(sanitizedName)
     }
     // Ensure numeric inputs can be parsed into ints
-    if (form.value.value !== null) {
-      const sanitizedValue = sanitizeAndValidateNumericInput(form.value)
-      errorsDetected &= sanitizedValue.error
+    if (valueInput.value !== null) {
+      const sanitizedValue = sanitizeAndValidateNumericInput(valueInput)
+      errorsDetected &= sanitizedValue.errorMessage !== null
       // Update state
-      setForm({
-        ...form,
-        value: {...sanitizedValue}
-      })
+      setValueInput(sanitizedValue)
     }
-    if (form.decrementBy.value !== null) {
-      const sanitizedDecrementBy = sanitizeAndValidateNumericInput(form.decrementBy)
-      errorsDetected &= sanitizedDecrementBy.error
+    if (decrementByInput.value !== null) {
+      const sanitizedDecrementBy = sanitizeAndValidateNumericInput(decrementByInput)
+      errorsDetected &= sanitizedDecrementBy.errorMessage !== null
       // Update state
-      setForm({
-        ...form,
-        decrementBy: {...sanitizedDecrementBy}
-      })
+      setDecrementByInput(sanitizedDecrementBy)
     }
-    if (form.incrementBy.value !== null) {
-      const sanitizedIncrementBy = sanitizeAndValidateNumericInput(form.incrementBy)
-      errorsDetected &= sanitizedIncrementBy.error
+    if (incrementByInput.value !== null) {
+      const sanitizedIncrementBy = sanitizeAndValidateNumericInput(incrementByInput)
+      errorsDetected &= sanitizedIncrementBy.errorMessage !== null
       // Update state
-      setForm({
-        ...form,
-        incrementBy: {...sanitizedIncrementBy}
-      })
+      setIncrementByInput(sanitizedIncrementBy)
     }
 
     // If everything checks out, return true, else false
@@ -216,14 +194,22 @@ function EditCounterDialog({ open,
   function onConfirmHandler() {
     // Update form state and check for errors
     const errorsDetected = sanitizeAndValidateFormValues()
+
     // Update counter and close dialog on success
     if (!errorsDetected) {
       const newCounter = {...currentCounter}
-      // Iterate thru form values and, if not-null, set newCounter values accordingly
-      for (const prop in form) {
-        if (form[prop].value !== null) {
-          newCounter[prop] = form[prop].value
-        }
+      // Update counter values
+      if (nameInput.value !== null) {
+        newCounter.name = nameInput.value
+      }
+      if (valueInput.value !== null) {
+        newCounter.value = valueInput.value
+      }
+      if (decrementByInput.value !== null) {
+        newCounter.decrementBy = decrementByInput.value
+      }
+      if (incrementByInput.value !== null) {
+        newCounter.incrementBy = incrementByInput.value
       }
 
       // Update counter
@@ -242,9 +228,9 @@ function EditCounterDialog({ open,
             <TextField
               fullWidth
               inputProps={{ name: 'name' }}
-              error={form.name.error}
-              helperText={form.name.errorMessage}
-              onChange={onUpdateField}
+              error={nameInput.errorMessage !== null}
+              helperText={nameInput.errorMessage}
+              onChange={inputOnChangeHandler(setNameInput)}
               label="Name"
               defaultValue={currentCounter.name}
             />
@@ -257,9 +243,9 @@ function EditCounterDialog({ open,
             InputLabelProps={{
               shrink: true,
             }}
-            error={form.value.error}
-            helperText={form.value.errorMessage}
-            onChange={onUpdateField}
+            error={valueInput.errorMessage !== null}
+            helperText={valueInput.errorMessage}
+            onChange={inputOnChangeHandler(setValueInput)}
             label="Value"
             defaultValue={currentCounter.value}
           />
@@ -276,9 +262,9 @@ function EditCounterDialog({ open,
                   </InputAdornment>
                 ),
               }}
-              error={form.decrementBy.error}
-              helperText={form.decrementBy.errorMessage}
-              onChange={onUpdateField}
+              error={decrementByInput.errorMessage !== null}
+              helperText={decrementByInput.errorMessage}
+              onChange={inputOnChangeHandler(setDecrementByInput)}
               label="Subtract By"
               defaultValue={currentCounter.decrementBy}
             />
@@ -294,9 +280,9 @@ function EditCounterDialog({ open,
                   </InputAdornment>
                 ),
               }}
-              error={form.incrementBy.error}
-              helperText={form.incrementBy.errorMessage}
-              onChange={onUpdateField}
+              error={incrementByInput.errorMessage !== null}
+              helperText={incrementByInput.errorMessage}
+              onChange={inputOnChangeHandler(setIncrementByInput)}
               label="Add By"
               defaultValue={currentCounter.incrementBy}
             />
