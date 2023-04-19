@@ -85,7 +85,7 @@ function DeleteCounterDialog({ open, targetName, confirmOnClick, closeOnClick })
 
 
 // Edit counter dialog
-// TODO: make prop names consistent
+// TODO: make prop and function names consistent
 function EditCounterDialog({ open,
                              currentCounter, setUpdatedCounter,
                              closeOnClick
@@ -135,85 +135,84 @@ function EditCounterDialog({ open,
     closeOnClick()
   }
 
-  // Helper function for numeric field validation
-  function sanitizeAndValidateNumericInput(inputState) {
-    const validatedInputState = {...inputState}
-    
-    // Attempt to parse int
-    validatedInputState.value = parseInt(inputState.value)
-    if (isNaN(validatedInputState.value)) {
-      validatedInputState.errorMessage = 'Value must be an integer.'
+  // Helper function for numeric field validation.
+  // Sets error message if value couldn't be parsed into an int.
+  // Returns parsed int (NaN if none could be parsed).
+  function sanitizeAndValidateNumericInput(inputState, setInputState) {
+    const parsedValue = parseInt(inputState.value)
+    // Set error message if int can't be parsed
+    if (isNaN(parsedValue)) {
+      setInputState({
+        ...inputState,
+        errorMessage: 'Value must be an integer.'
+      })
     }
-    return validatedInputState
+    return parsedValue
   }
 
-  // Cleans up non-null form values, then attempts to validate them.
-  // If invalid, update state of each to show error message and set error to true.
-  // Returns true if everything is valid, false if there's any issues
-  function sanitizeAndValidateFormValues() {
+  // Attempts to validate form inputs. If everything is valid, update the counter with new values.
+  // Set error messages on inputs that are invalid.
+  // Returns true if errors were detected, false if not.
+  // TODO: rename to better indicate return value
+  function validateFormAndUpdateCounterIfValid() {
+    const newCounter = {...currentCounter}
     let errorsDetected = false
 
     // Cleanup name and ensure it isn't blank
     if (nameInput.value !== null) {
-      const sanitizedName = {
-        value: nameInput.value.trim(),
-        errorMessage: null,
-      }
-      if (sanitizedName.value === '') {
+      const trimmedName = nameInput.value.trim()
+      // Show error on input if name is blank
+      if (trimmedName === '') {
         errorsDetected = true
-        sanitizedName.errorMessage = 'Name cannot be blank.'
+        setNameInput({
+          ...nameInput,
+          errorMessage: 'Name cannot be blank.'
+        })
+      } else {
+        newCounter.name = trimmedName
       }
-      // Update state
-      setNameInput(sanitizedName)
     }
     // Ensure numeric inputs can be parsed into ints
     if (valueInput.value !== null) {
-      const sanitizedValue = sanitizeAndValidateNumericInput(valueInput)
-      errorsDetected &= sanitizedValue.errorMessage !== null
-      // Update state
-      setValueInput(sanitizedValue)
+      const sanitizedValue = sanitizeAndValidateNumericInput(valueInput, setValueInput)
+      if (isNaN(sanitizedValue)) {
+        errorsDetected = true
+      } else {
+        newCounter.value = sanitizedValue
+      }
     }
     if (decrementByInput.value !== null) {
-      const sanitizedDecrementBy = sanitizeAndValidateNumericInput(decrementByInput)
-      errorsDetected &= sanitizedDecrementBy.errorMessage !== null
-      // Update state
-      setDecrementByInput(sanitizedDecrementBy)
+      const sanitizedDecrementBy = sanitizeAndValidateNumericInput(decrementByInput, setDecrementByInput)
+      if (isNaN(sanitizedDecrementBy)) {
+        errorsDetected = true
+      } else {
+        newCounter.decrementBy = sanitizedDecrementBy
+      }
     }
     if (incrementByInput.value !== null) {
-      const sanitizedIncrementBy = sanitizeAndValidateNumericInput(incrementByInput)
-      errorsDetected &= sanitizedIncrementBy.errorMessage !== null
-      // Update state
-      setIncrementByInput(sanitizedIncrementBy)
+      const sanitizedIncrementBy = sanitizeAndValidateNumericInput(incrementByInput, setIncrementByInput)
+      if (isNaN(sanitizedIncrementBy)) {
+        errorsDetected = true
+      } else {
+        newCounter.incrementBy = sanitizedIncrementBy
+      }
     }
 
-    // If everything checks out, return true, else false
+    // Update the counter if everything checks out
+    if (!errorsDetected) {
+      setUpdatedCounter(newCounter)
+    }
+
     return errorsDetected
   }
 
   // Validate form inputs and update counter if successful
   function onConfirmHandler() {
     // Update form state and check for errors
-    const errorsDetected = sanitizeAndValidateFormValues()
+    const errorsDetected = validateFormAndUpdateCounterIfValid()
 
-    // Update counter and close dialog on success
+    // Close dialog on success
     if (!errorsDetected) {
-      const newCounter = {...currentCounter}
-      // Update counter values
-      if (nameInput.value !== null) {
-        newCounter.name = nameInput.value
-      }
-      if (valueInput.value !== null) {
-        newCounter.value = valueInput.value
-      }
-      if (decrementByInput.value !== null) {
-        newCounter.decrementBy = decrementByInput.value
-      }
-      if (incrementByInput.value !== null) {
-        newCounter.incrementBy = incrementByInput.value
-      }
-
-      // Update counter
-      setUpdatedCounter(newCounter)
       // Close dialog
       onCloseHandler()
     }
