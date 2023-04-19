@@ -6,13 +6,13 @@ import {
   ButtonGroup,
   Container,
   Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-  Divider, Fab,
+  Fab,
   IconButton, InputAdornment,
   Stack,
   TextField, Toolbar,
   Typography
 } from "@mui/material";
-import {Add, AddBox, AddCircleOutline, Clear, Edit, RemoveCircleOutline} from "@mui/icons-material";
+import {Add, AddCircleOutline, Clear, Edit, RemoveCircleOutline} from "@mui/icons-material";
 import Grid from "@mui/material/Unstable_Grid2";
 
 // TODO: https://mui.com/material-ui/react-button/#material-you-version
@@ -477,7 +477,7 @@ function CounterList() {
         currentCounter={editDialog.currentCounter}
         setUpdatedCounter={setUpdatedCounter}
         closeOnClick={handleEditCloseButtonClick}
-        />
+      />
     </Box>
   )
 }
