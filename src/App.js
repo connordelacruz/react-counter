@@ -6,8 +6,8 @@ import {
   ButtonGroup,
   Container,
   Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-  Fab,
-  IconButton, InputAdornment,
+  Fab, FormControl, FormLabel,
+  IconButton, InputAdornment, Radio, RadioGroup,
   Stack,
   TextField, Toolbar,
   Typography
@@ -19,13 +19,19 @@ import Grid from "@mui/material/Unstable_Grid2";
 
 
 // Counter Component
-function Counter({ value, name, decrementBy, incrementBy,
+function Counter({ value, name, decrementBy, incrementBy, color,
                    decrementOnClick, incrementOnClick,
                    editOnClick, deleteOnClick
                  }) {
   return (
-    <Box>
-      <AppBar position="static" elevation={0}>
+    <Box
+      sx={{
+        border: 2,
+        borderColor: `${color}.main`,
+        borderRadius: '4px',
+      }}
+    >
+      <AppBar color={color} position="static" elevation={0}>
         <Toolbar>
           <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>{name}</Typography>
           <ButtonGroup>
@@ -38,8 +44,8 @@ function Counter({ value, name, decrementBy, incrementBy,
           </ButtonGroup>
         </Toolbar>
       </AppBar>
-      <Stack alignItems="center" direction="row" spacing={2} my={2}>
-        <Button variant="outlined" size="large" fullWidth
+      <Stack alignItems="center" direction="row" spacing={2} m={2}>
+        <Button variant="outlined" size="large" fullWidth color={color}
                 startIcon={<RemoveCircleOutline/>}
                 onClick={decrementOnClick}>
           {decrementBy}
@@ -47,7 +53,7 @@ function Counter({ value, name, decrementBy, incrementBy,
         <Box my={2} sx={{width: 1}}>
           <Typography variant="h3" sx={{textAlign: 'center'}}>{value}</Typography>
         </Box>
-        <Button variant="outlined" size="large" fullWidth
+        <Button variant="outlined" size="large" fullWidth color={color}
                 startIcon={<AddCircleOutline/>}
                 onClick={incrementOnClick}>
           {incrementBy}
@@ -108,6 +114,7 @@ function EditCounterDialog({ open,
     value: null,
     errorMessage: null,
   })
+  const [colorSelection, setColorSelection] = useState(null)
   
   // Function for resetting form input states
   function resetInputStates() {
@@ -115,6 +122,7 @@ function EditCounterDialog({ open,
     setValueInput({value: null, errorMessage: null})
     setIncrementByInput({value: null, errorMessage: null})
     setDecrementByInput({value: null, errorMessage: null})
+    setColorSelection(null)
   }
 
   // Returns onChange handler function for an input
@@ -127,6 +135,11 @@ function EditCounterDialog({ open,
       }
       setStateMethod(newInput)
     }
+  }
+
+  // Update color selection
+  function colorRadioGroupOnChangeHandler(e) {
+    setColorSelection(e.target.value)
   }
 
   // Reset form on close
@@ -196,6 +209,10 @@ function EditCounterDialog({ open,
       } else {
         newCounter.incrementBy = sanitizedIncrementBy
       }
+    }
+    // Set selected color
+    if (colorSelection !== null) {
+      newCounter.color = colorSelection
     }
 
     // Update the counter if everything checks out
@@ -287,6 +304,43 @@ function EditCounterDialog({ open,
             />
           </Grid>
         </Grid>
+        <Box>
+          <FormControl fullWidth>
+            <FormLabel
+              color={colorSelection !== null ? colorSelection : 'primary'}
+              id="color-radio-group-label"
+            >
+              Color:
+            </FormLabel>
+            <RadioGroup
+              row
+              aria-labelledby="color-radio-group-label"
+              onChange={colorRadioGroupOnChangeHandler}
+              defaultValue={currentCounter.color !== '' ? currentCounter.color : 'primary'}
+            >
+              <Radio size="large"
+                     color="primary" sx={{color: 'primary.main'}}
+                     value="primary"
+              />
+              <Radio size="large"
+                     color="secondary" sx={{color: 'secondary.main'}}
+                     value="secondary"
+              />
+              <Radio size="large"
+                     color="success" sx={{color: 'success.main'}}
+                     value="success"
+              />
+              <Radio size="large"
+                     color="warning" sx={{color: 'warning.main'}}
+                     value="warning"
+              />
+              <Radio size="large"
+                     color="error" sx={{color: 'error.main'}}
+                     value="error"
+              />
+            </RadioGroup>
+          </FormControl>
+        </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={onCloseHandler}>
@@ -313,10 +367,11 @@ function CounterList() {
   const [counters, setCounters] = useState(
     [
       {
+        name: 'Counter 0',
         value: 0,
         incrementBy: 1,
         decrementBy: 1,
-        name: 'Counter 0',
+        color: 'primary',
       }
     ]
   )
@@ -332,10 +387,11 @@ function CounterList() {
   function handleNewCounterButtonClick() {
     const counterNumber = counters.length
     const newCounter = {
+      name: `Counter ${counterNumber}`,
       value: 0,
       incrementBy: 1,
       decrementBy: 1,
-      name: `Counter ${counterNumber}`,
+      color: 'primary',
     }
     const newCounters = [...counters, newCounter]
     setCounters(newCounters)
@@ -391,6 +447,7 @@ function CounterList() {
         value: '',
         decrementBy: '',
         incrementBy: '',
+        color: '',
       },
     }
   )
@@ -427,6 +484,7 @@ function CounterList() {
         value: '',
         decrementBy: '',
         incrementBy: '',
+        color: '',
       }
     })
   }
@@ -440,10 +498,11 @@ function CounterList() {
     return (
       <Box key={i}>
         <Counter
-          value={counters[i].value}
           name={counters[i].name}
+          value={counters[i].value}
           decrementBy={counters[i].decrementBy}
           incrementBy={counters[i].incrementBy}
+          color={counters[i].color}
           incrementOnClick={() => handleCounterButtonClick(i, counters[i].incrementBy)}
           decrementOnClick={() => handleCounterButtonClick(i, -1 * counters[i].decrementBy)}
           editOnClick={handleEditButtonClick(i)}
