@@ -1,3 +1,6 @@
+// ================================================================================
+// IMPORTS
+// ================================================================================
 import { useState } from 'react'
 import {
   AppBar,
@@ -11,12 +14,62 @@ import {
   Stack,
   TextField, Toolbar,
   Typography
-} from "@mui/material";
-import {Add, AddCircleOutline, Clear, Edit, RemoveCircleOutline} from "@mui/icons-material";
-import Grid from "@mui/material/Unstable_Grid2";
+} from "@mui/material"
+import {Add, AddCircleOutline, Clear, Edit, RemoveCircleOutline} from "@mui/icons-material"
+import Grid from "@mui/material/Unstable_Grid2"
 
 // TODO: https://mui.com/material-ui/react-button/#material-you-version
 
+
+// ================================================================================
+// HELPER FUNCTIONS
+// ================================================================================
+
+// Hook to save state to local storage
+// https://usehooks.com/useLocalStorage/
+function useLocalStorage(key, initialValue) {
+  // State to store our value
+  // Pass initial state function to useState so logic is only executed once
+  const [storedValue, setStoredValue] = useState(() => {
+    if (typeof window === "undefined") {
+      return initialValue;
+    }
+    try {
+      // Get from local storage by key
+      const item = window.localStorage.getItem(key);
+      // Parse stored json or if none return initialValue
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      // If error also return initialValue
+      console.log(error);
+      return initialValue;
+    }
+  });
+  // Return a wrapped version of useState's setter function that ...
+  // ... persists the new value to localStorage.
+  const setValue = (value) => {
+    try {
+      // Allow value to be a function so we have same API as useState
+      const valueToStore =
+        value instanceof Function ? value(storedValue) : value;
+      // Save state
+      setStoredValue(valueToStore);
+      // Save to local storage
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+      }
+    } catch (error) {
+      // A more advanced implementation would handle the error case
+      console.log(error);
+    }
+  };
+  return [storedValue, setValue];
+}
+
+
+// ================================================================================
+// REACT COMPONENTS
+// ================================================================================
 
 // Counter Component
 function Counter({ value, name, decrementBy, incrementBy, color,
@@ -338,6 +391,10 @@ function EditCounterDialog({ open,
                      color="error" sx={{color: 'error.main'}}
                      value="error"
               />
+              <Radio size="large"
+                     color="info" sx={{color: 'info.main'}}
+                     value="info"
+              />
             </RadioGroup>
           </FormControl>
         </Box>
@@ -364,7 +421,9 @@ function CounterList() {
   // Counters list
   // --------------------------------------------------------------------------------
   // State
-  const [counters, setCounters] = useState(
+  // NOTE: We're using local storage hook so data persists on reload
+  const [counters, setCounters] = useLocalStorage(
+    'counters',
     [
       {
         name: 'Counter 0',
@@ -511,10 +570,19 @@ function CounterList() {
       </Box>
     )
   })
+  // Message to display if no counters are listed
+  const noCountersMessage = (
+    <Box sx={{
+      textAlign: 'center',
+      color: 'text.disabled',
+    }}>
+      <Typography variant="subtitle1"><i>No counters to display.</i></Typography>
+    </Box>
+  )
 
   return (
     <Box>
-      <Stack spacing={2}>{counterList}</Stack>
+      <Stack spacing={2}>{counterList.length > 0 ? counterList : noCountersMessage}</Stack>
       <Box sx={{
         my: 4,
         textAlign: 'right'
