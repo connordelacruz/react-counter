@@ -15,7 +15,7 @@ import {
   TextField, Toolbar,
   Typography
 } from "@mui/material"
-import {Add, AddCircleOutline, Clear, Edit, RemoveCircleOutline} from "@mui/icons-material"
+import {Add, AddCircleOutline, Clear, Edit, RemoveCircleOutline, RestartAlt} from "@mui/icons-material"
 import Grid from "@mui/material/Unstable_Grid2"
 
 // TODO: https://mui.com/material-ui/react-button/#material-you-version
@@ -74,7 +74,7 @@ function useLocalStorage(key, initialValue) {
 // Counter Component
 function Counter({ value, name, decrementBy, incrementBy, color,
                    decrementOnClick, incrementOnClick,
-                   editOnClick, deleteOnClick
+                   editOnClick, deleteOnClick, resetOnClick
                  }) {
   return (
     <Box
@@ -90,6 +90,9 @@ function Counter({ value, name, decrementBy, incrementBy, color,
           <ButtonGroup>
             <IconButton color="inherit" onClick={editOnClick}>
               <Edit/>
+            </IconButton>
+            <IconButton color="inherit" onClick={resetOnClick}>
+              <RestartAlt/>
             </IconButton>
             <IconButton color="inherit" onClick={deleteOnClick}>
               <Clear/>
@@ -128,6 +131,32 @@ function DeleteCounterDialog({ open, targetName, confirmOnClick, closeOnClick })
       <DialogContent>
         <DialogContentText>
           Are you sure you want to delete <b>{targetName}</b>?
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={closeOnClick} autoFocus>
+          Cancel
+        </Button>
+        <Button onClick={confirmOnClick}>
+          Confirm
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+
+
+// Reset confirmation dialog
+function ResetCounterDialog({ open, targetName, resetValue, confirmOnClick, closeOnClick }) {
+  return (
+    <Dialog
+      open={open}
+      onClose={closeOnClick}
+    >
+      <DialogTitle>Reset Counter Value?</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          Reset <b>{targetName}</b> value to <b>{resetValue}</b>?
         </DialogContentText>
       </DialogContent>
       <DialogActions>
@@ -428,6 +457,7 @@ function CounterList() {
       {
         name: 'Counter 0',
         value: 0,
+        resetValue: 0,
         incrementBy: 1,
         decrementBy: 1,
         color: 'primary',
@@ -448,6 +478,7 @@ function CounterList() {
     const newCounter = {
       name: `Counter ${counterNumber}`,
       value: 0,
+      resetValue: 0,
       incrementBy: 1,
       decrementBy: 1,
       color: 'primary',
@@ -494,6 +525,42 @@ function CounterList() {
   }
 
   // --------------------------------------------------------------------------------
+  // Reset dialog
+  // --------------------------------------------------------------------------------
+  const [resetDialog, setResetDialog] = useState(
+    {
+      open: false,
+      target: null,
+    }
+  )
+
+  // Open reset confirmation dialog
+  function handleResetButtonClick(i) {
+    return () => {
+      // Set reset dialog target and open confirmation
+      setResetDialog({open: true, target: i})
+    }
+  }
+
+  // Confirm button click
+  function handleResetConfirmButtonClick() {
+    if (resetDialog.target !== null) {
+      // Reset the target counter
+      const newCounters = [...counters]
+      newCounters[resetDialog.target].value = newCounters[resetDialog.target].resetValue
+      setCounters(newCounters)
+    }
+    // Clear reset target and close dialog
+    handleResetCloseButtonClick()
+  }
+
+  // Close button click
+  function handleResetCloseButtonClick() {
+    // Clear reset target and close dialog
+    setResetDialog({open: false, target: null})
+  }
+
+  // --------------------------------------------------------------------------------
   // Edit dialog
   // --------------------------------------------------------------------------------
   // State
@@ -504,6 +571,7 @@ function CounterList() {
       currentCounter: {
         name: '',
         value: '',
+        resetValue: '',
         decrementBy: '',
         incrementBy: '',
         color: '',
@@ -541,6 +609,7 @@ function CounterList() {
       currentCounter: {
         name: '',
         value: '',
+        resetValue: '',
         decrementBy: '',
         incrementBy: '',
         color: '',
@@ -565,6 +634,7 @@ function CounterList() {
           incrementOnClick={() => handleCounterButtonClick(i, counters[i].incrementBy)}
           decrementOnClick={() => handleCounterButtonClick(i, -1 * counters[i].decrementBy)}
           editOnClick={handleEditButtonClick(i)}
+          resetOnClick={handleResetButtonClick(i)}
           deleteOnClick={handleDeleteButtonClick(i)}
         />
       </Box>
@@ -598,6 +668,13 @@ function CounterList() {
         targetName={deleteDialog.target !== null ? counters[deleteDialog.target].name : ''}
         confirmOnClick={handleDeleteConfirmButtonClick}
         closeOnClick={handleDeleteCloseButtonClick}
+      />
+      <ResetCounterDialog
+        open={resetDialog.open}
+        targetName={resetDialog.target !== null ? counters[resetDialog.target].name : ''}
+        resetValue={resetDialog.target !== null ? counters[resetDialog.target].resetValue : ''}
+        confirmOnClick={handleResetConfirmButtonClick}
+        closeOnClick={handleResetCloseButtonClick}
       />
       <EditCounterDialog
         open={editDialog.open}
