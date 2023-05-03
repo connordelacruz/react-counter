@@ -72,7 +72,7 @@ function useLocalStorage(key, initialValue) {
 // ================================================================================
 
 // Counter Component
-function Counter({ value, name, decrementBy, incrementBy, color,
+function Counter({ value, name, decrementBy, incrementBy, color, resetValue,
                    decrementOnClick, incrementOnClick,
                    editOnClick, deleteOnClick, resetOnClick
                  }) {
@@ -88,11 +88,11 @@ function Counter({ value, name, decrementBy, incrementBy, color,
         <Toolbar>
           <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>{name}</Typography>
           <ButtonGroup>
+            <IconButton color="inherit" onClick={resetOnClick}>
+              <RestartAlt/><Typography> {resetValue}</Typography>
+            </IconButton>
             <IconButton color="inherit" onClick={editOnClick}>
               <Edit/>
-            </IconButton>
-            <IconButton color="inherit" onClick={resetOnClick}>
-              <RestartAlt/>
             </IconButton>
             <IconButton color="inherit" onClick={deleteOnClick}>
               <Clear/>
@@ -188,6 +188,10 @@ function EditCounterDialog({ open,
     value: null,
     errorMessage: null,
   })
+  const [resetValueInput, setResetValueInput] = useState({
+    value: null,
+    errorMessage: null,
+  })
   const [incrementByInput, setIncrementByInput] = useState({
     value: null,
     errorMessage: null,
@@ -202,6 +206,7 @@ function EditCounterDialog({ open,
   function resetInputStates() {
     setNameInput({value: null, errorMessage: null})
     setValueInput({value: null, errorMessage: null})
+    setResetValueInput({value: null, errorMessage: null})
     setIncrementByInput({value: null, errorMessage: null})
     setDecrementByInput({value: null, errorMessage: null})
     setColorSelection(null)
@@ -276,6 +281,14 @@ function EditCounterDialog({ open,
         newCounter.value = sanitizedValue
       }
     }
+    if (resetValueInput.value !== null) {
+      const sanitizedResetValue = sanitizeAndValidateNumericInput(resetValueInput, setResetValueInput)
+      if (isNaN(sanitizedResetValue)) {
+        errorsDetected = true
+      } else {
+        newCounter.resetValue = sanitizedResetValue
+      }
+    }
     if (decrementByInput.value !== null) {
       const sanitizedDecrementBy = sanitizeAndValidateNumericInput(decrementByInput, setDecrementByInput)
       if (isNaN(sanitizedDecrementBy)) {
@@ -334,19 +347,37 @@ function EditCounterDialog({ open,
             />
           </Grid>
           <Grid xs={12}>
-          <TextField
-            fullWidth
-            type="number"
-            inputProps={{ name: 'value' }}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            error={valueInput.errorMessage !== null}
-            helperText={valueInput.errorMessage}
-            onChange={inputOnChangeHandler(setValueInput)}
-            label="Value"
-            defaultValue={currentCounter.value}
-          />
+            <TextField
+              fullWidth
+              type="number"
+              inputProps={{ name: 'value' }}
+              InputLabelProps={{ shrink: true }}
+              error={valueInput.errorMessage !== null}
+              helperText={valueInput.errorMessage}
+              onChange={inputOnChangeHandler(setValueInput)}
+              label="Value"
+              defaultValue={currentCounter.value}
+            />
+          </Grid>
+          <Grid xs={12}>
+            <TextField
+              fullWidth
+              type="number"
+              InputProps={{
+                name: 'resetValue',
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <RestartAlt/>
+                  </InputAdornment>
+                ),
+              }}
+              InputLabelProps={{ shrink: true }}
+              error={resetValueInput.errorMessage !== null}
+              helperText={resetValueInput.errorMessage}
+              onChange={inputOnChangeHandler(setResetValueInput)}
+              label="Reset Value"
+              defaultValue={currentCounter.resetValue}
+            />
           </Grid>
           <Grid xs={6}>
             <TextField
@@ -360,6 +391,7 @@ function EditCounterDialog({ open,
                   </InputAdornment>
                 ),
               }}
+              InputLabelProps={{ shrink: true }}
               error={decrementByInput.errorMessage !== null}
               helperText={decrementByInput.errorMessage}
               onChange={inputOnChangeHandler(setDecrementByInput)}
@@ -378,6 +410,7 @@ function EditCounterDialog({ open,
                   </InputAdornment>
                 ),
               }}
+              InputLabelProps={{ shrink: true }}
               error={incrementByInput.errorMessage !== null}
               helperText={incrementByInput.errorMessage}
               onChange={inputOnChangeHandler(setIncrementByInput)}
@@ -628,6 +661,7 @@ function CounterList() {
         <Counter
           name={counters[i].name}
           value={counters[i].value}
+          resetValue={counters[i].resetValue}
           decrementBy={counters[i].decrementBy}
           incrementBy={counters[i].incrementBy}
           color={counters[i].color}
