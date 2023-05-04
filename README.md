@@ -1,3 +1,21 @@
+# Overview
+
+React practice project to get familiar with modern React development convetions and try out MUI's Material UI library.
+
+This app lets you create and customize a list of counters. Each counter has the following values that can be modified:
+
+- **Name:** Title displayed at the top of the counter
+- **Value:** The current value the counter is set to
+- **Increment/Decrement by:** Amount to increase/decrease counter value by when the plus/minus button is pressed
+- **Reset value:** Value to set the counter to when the reset button is clicked
+- **Color:** Which theme color to use on the counter
+
+# TODO:
+
+**Update README to be more specific to this project once it's fleshed out**
+
+--------------------------------------------------------------------------------
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
