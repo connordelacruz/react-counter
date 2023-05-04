@@ -15,7 +15,7 @@ import {
 } from "@mui/material"
 import {useState} from "react"
 import Grid from "@mui/material/Unstable_Grid2"
-import {AddCircleOutline, RemoveCircleOutline, RestartAlt} from "@mui/icons-material"
+import {AddCircleOutline, Edit, Numbers, RemoveCircleOutline, RestartAlt} from "@mui/icons-material"
 
 // Delete confirmation dialog
 export function DeleteCounterDialog({open, targetName, confirmOnClick, closeOnClick}) {
@@ -234,7 +234,14 @@ export function EditCounterDialog({
           <Grid xs={12}>
             <TextField
               fullWidth
-              inputProps={{name: 'name'}}
+              InputProps={{
+                name: 'name',
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Edit/>
+                  </InputAdornment>
+                ),
+              }}
               error={nameInput.errorMessage !== null}
               helperText={nameInput.errorMessage}
               onChange={inputOnChangeHandler(setNameInput)}
@@ -246,7 +253,14 @@ export function EditCounterDialog({
             <TextField
               fullWidth
               type="number"
-              inputProps={{name: 'value'}}
+              InputProps={{
+                name: 'value',
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Numbers/>
+                  </InputAdornment>
+                ),
+              }}
               InputLabelProps={{shrink: true}}
               error={valueInput.errorMessage !== null}
               helperText={valueInput.errorMessage}
