@@ -1,6 +1,6 @@
 // Counter Component
 import {AppBar, Box, Button, ButtonGroup, IconButton, Stack, Toolbar, Typography} from "@mui/material";
-import {AddCircleOutline, Clear, Edit, RemoveCircleOutline, RestartAlt} from "@mui/icons-material";
+import {AddCircleOutline, Clear, DragIndicator, Edit, RemoveCircleOutline, RestartAlt} from "@mui/icons-material"
 import {useDrag, useDrop} from "react-dnd"
 import {useRef} from "react"
 
@@ -11,6 +11,7 @@ export function Counter({
                           moveCounter
                         }) {
   // TODO: official example looks a lil different for the setup, prob re-work a bit: https://codesandbox.io/s/github/react-dnd/react-dnd/tree/gh-pages/examples_js/04-sortable/simple?from-embed=&file=/src/Card.js
+  // TODO: implement handle/preview
   // Setup counters to be draggable
   const [{ isDragging }, dragRef] = useDrag({
     type: 'counter',
@@ -61,7 +62,6 @@ export function Counter({
   // Make items being dragged transparent
   const opacity = isDragging ? 0.25 : 1
 
-  // TODO: add drop handle, and/or make app bar cursor the move one
   return (
     <Box
       ref={dragDropRef}
@@ -74,6 +74,13 @@ export function Counter({
     >
       <AppBar color={color} position="static" elevation={0}>
         <Toolbar>
+          <IconButton
+            color="inherit"
+            edge="start"
+            sx={{cursor: 'move'}}
+          >
+            <DragIndicator/>
+          </IconButton>
           <Typography variant="h5" component="div" sx={{flexGrow: 1}}>{name}</Typography>
           <ButtonGroup>
             <IconButton color="inherit" onClick={resetOnClick}>
