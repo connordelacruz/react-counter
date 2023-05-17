@@ -1,9 +1,11 @@
 import {useLocalStorage} from "./Helpers"
-import {useState} from "react"
+import {useCallback, useState} from "react"
 import {Box, Fab, Stack, Typography} from "@mui/material"
 import {Counter} from "./Counter"
 import {Add} from "@mui/icons-material"
 import {DeleteCounterDialog, EditCounterDialog, ResetCounterDialog} from "./Dialogs"
+import {DndProvider} from "react-dnd"
+import {HTML5Backend} from "react-dnd-html5-backend"
 
 // List of Counters
 export function CounterList() {
@@ -25,8 +27,14 @@ export function CounterList() {
         incrementBy: 1,
         decrementBy: 1,
         color: 'primary',
+        id: 'counter-0',
       }
     ]
+  )
+  // Used for generating counter ids. Gets incremented each time a new counter is added
+  const [currentCounterId, setCurrentCounterId] = useLocalStorage(
+    'currentCounterId',
+    counters.length
   )
 
   // Increment/decrement counter
@@ -46,10 +54,29 @@ export function CounterList() {
       incrementBy: 1,
       decrementBy: 1,
       color: 'primary',
+      id: `counter-${currentCounterId}`,
     }
     const newCounters = [...counters, newCounter]
     setCounters(newCounters)
+    // Increment counter id
+    setCurrentCounterId(currentCounterId + 1)
   }
+
+  // Callback to swap indices when dragging. Called when counters is updated
+  // TODO: is this gonna cause problems since counters gets updated by a lot of other things?
+  const moveCounter = useCallback(
+    (dragIndex, hoverIndex) => {
+      const dragCounter = counters[dragIndex]
+      const hoverCounter = counters[hoverIndex]
+      setCounters(counters => {
+        const newCounters = [...counters]
+        newCounters[dragIndex] = hoverCounter
+        newCounters[hoverIndex] = dragCounter
+        return newCounters
+      })
+    },
+    [counters]
+  )
 
   // --------------------------------------------------------------------------------
   // Delete dialog
@@ -188,21 +215,22 @@ export function CounterList() {
   // Render list of counters from state
   const counterList = counters.map((counter, i) => {
     return (
-      <Box key={i}>
-        <Counter
-          name={counters[i].name}
-          value={counters[i].value}
-          resetValue={counters[i].resetValue}
-          decrementBy={counters[i].decrementBy}
-          incrementBy={counters[i].incrementBy}
-          color={counters[i].color}
-          incrementOnClick={() => handleCounterButtonClick(i, counters[i].incrementBy)}
-          decrementOnClick={() => handleCounterButtonClick(i, -1 * counters[i].decrementBy)}
-          editOnClick={handleEditButtonClick(i)}
-          resetOnClick={handleResetButtonClick(i)}
-          deleteOnClick={handleDeleteButtonClick(i)}
-        />
-      </Box>
+      <Counter
+        key={counters[i].id}
+        index={i}
+        name={counters[i].name}
+        value={counters[i].value}
+        resetValue={counters[i].resetValue}
+        decrementBy={counters[i].decrementBy}
+        incrementBy={counters[i].incrementBy}
+        color={counters[i].color}
+        incrementOnClick={() => handleCounterButtonClick(i, counters[i].incrementBy)}
+        decrementOnClick={() => handleCounterButtonClick(i, -1 * counters[i].decrementBy)}
+        editOnClick={handleEditButtonClick(i)}
+        resetOnClick={handleResetButtonClick(i)}
+        deleteOnClick={handleDeleteButtonClick(i)}
+        moveCounter={moveCounter}
+      />
     )
   })
   // Message to display if no counters are listed
@@ -217,7 +245,11 @@ export function CounterList() {
 
   return (
     <Box>
-      <Stack spacing={2}>{counterList.length > 0 ? counterList : noCountersMessage}</Stack>
+      <Stack spacing={2}>
+        <DndProvider backend={HTML5Backend}>
+          {counterList.length > 0 ? counterList : noCountersMessage}
+        </DndProvider>
+      </Stack>
       <Box sx={{
         my: 4,
         textAlign: 'right'
