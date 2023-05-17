@@ -10,6 +10,7 @@ export function Counter({
                           editOnClick, deleteOnClick, resetOnClick,
                           moveCounter
                         }) {
+  // TODO: official example looks a lil different for the setup, prob re-work a bit: https://codesandbox.io/s/github/react-dnd/react-dnd/tree/gh-pages/examples_js/04-sortable/simple?from-embed=&file=/src/Card.js
   // Setup counters to be draggable
   const [{ isDragging }, dragRef] = useDrag({
     type: 'counter',
@@ -25,18 +26,30 @@ export function Counter({
     hover: (item, monitor) => {
       const dragIndex = item.index
       const hoverIndex = index
-      // TODO: document, probable re-work to utilize handles? and make drop target stuff smoother
-      const hoverBoundingRect = ref.current?.getBoundingClientRect()
-      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
-      const hoverActualY = monitor.getClientOffset().y - hoverBoundingRect.top
+      // Don't replace items with themselves
+      if (dragIndex === hoverIndex) return
 
-      // if dragging down, continue only when hover is smaller than middle Y
+      // Determine rectangle on screen
+      const hoverBoundingRect = ref.current?.getBoundingClientRect()
+      // Get vertical middle
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
+      // Determine mouse position
+      const clientOffset = monitor.getClientOffset()
+      // Get pixels to the top
+      const hoverActualY = clientOffset.y - hoverBoundingRect.top
+
+      // Only perform the move when the mouse has crossed half of the items height
+      // When dragging downwards, only move when the cursor is below 50%
       if (dragIndex < hoverIndex && hoverActualY < hoverMiddleY) return
-      // if dragging up, continue only when hover is bigger than middle Y
+      // When dragging upwards, only move when the cursor is above 50%
       if (dragIndex > hoverIndex && hoverActualY > hoverMiddleY) return
 
       // Move the item and update the index
       moveCounter(dragIndex, hoverIndex)
+      // Note: we're mutating the monitor item here!
+      // Generally it's better to avoid mutations,
+      // but it's good here for the sake of performance
+      // to avoid expensive index searches.
       item.index = hoverIndex
     }
   })
@@ -48,6 +61,7 @@ export function Counter({
   // Make items being dragged transparent
   const opacity = isDragging ? 0.25 : 1
 
+  // TODO: add drop handle, and/or make app bar cursor the move one
   return (
     <Box
       ref={dragDropRef}
