@@ -11,8 +11,10 @@ export function Counter({
                           moveCounter
                         }) {
   // TODO: official example looks a lil different for the setup, prob re-work a bit: https://codesandbox.io/s/github/react-dnd/react-dnd/tree/gh-pages/examples_js/04-sortable/simple?from-embed=&file=/src/Card.js
-  // TODO: implement handle/preview
+  // TODO: animation with motion: https://medium.com/@andrew_b_berg/using-react-motion-with-react-dnd-85755f2ecc68
   // Setup counters to be draggable
+  // NOTE: wanted to make it so it only drags when grabbing the handle, but there were bugs with the drag preview in
+  //       chrome and it's working fine as-is, so maybe that'll be a future update
   const [{ isDragging }, dragRef] = useDrag({
     type: 'counter',
     item: { index },
