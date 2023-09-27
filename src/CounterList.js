@@ -8,6 +8,9 @@ import {DndProvider} from "react-dnd"
 import {HTML5Backend} from "react-dnd-html5-backend"
 
 // List of Counters
+// TODO: params:
+//       counters, setCounters
+//      currentCounterId, setCurrentCounterId
 export function CounterList() {
   // ================================================================================
   // STATE AND HELPER FUNCTIONS
@@ -16,7 +19,7 @@ export function CounterList() {
   // Counters list
   // --------------------------------------------------------------------------------
   // State
-  // NOTE: We're using local storage hook so data persists on reload
+  // TODO: CONVERT TO PROPS
   const [counters, setCounters] = useLocalStorage(
     'counters',
     [
@@ -32,6 +35,7 @@ export function CounterList() {
     ]
   )
   // Used for generating counter ids. Gets incremented each time a new counter is added
+  // TODO: CONVERT TO PROPS
   const [currentCounterId, setCurrentCounterId] = useLocalStorage(
     'currentCounterId',
     counters.length
@@ -63,7 +67,6 @@ export function CounterList() {
   }
 
   // Callback to swap indices when dragging. Called when counters is updated
-  // TODO: is this gonna cause problems since counters gets updated by a lot of other things?
   const moveCounter = useCallback(
     (dragIndex, hoverIndex) => {
       const dragCounter = counters[dragIndex]
@@ -78,6 +81,7 @@ export function CounterList() {
     [counters]
   )
 
+  // TODO: LIFT UP DIALOGS NEXT
   // --------------------------------------------------------------------------------
   // Delete dialog
   // --------------------------------------------------------------------------------
